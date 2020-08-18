@@ -1,7 +1,7 @@
 <template>
 	<draggable v-bind="dragOptions" tag="div" class="item-container" :list="list">
 		<div class="node" :key="el.label" v-for="el in list">
-			<div style="padding-left: 18px;text-align: left" class="item">{{ el.label }}</div>
+			<div style="padding-left: 18px;text-align: left" class="item">{{ el.data.label }}</div>
 			<tree-node class="item-sub" :node="el" :list="el.childNodes" />
 		</div>
 	</draggable>

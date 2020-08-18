@@ -1,12 +1,7 @@
 import { NodeEntity } from './NodeEntity';
 import { NodeManage } from './NodeManage';
 
-export class Node {
-    public nodeData: NodeEntity = new NodeEntity();
-
-    public getNodeData(): NodeEntity {
-        return this.nodeData;
-    }
+export class Node extends NodeEntity {
 
     public insertChild(child: NodeEntity, index?: number, batch?: boolean) {
         if (!(child instanceof Node)) {
@@ -22,25 +17,24 @@ export class Node {
             }
             this.objectAssign(child, {
                 parent: this,
-                store: this.nodeData.store
+                store: this.store
             });
-            let point = NodeManage.generateNode(child);
-            child = point!.nodeData;
+            child = NodeManage.generateNode(child) as Node;
         }
 
-        child.level = this.nodeData.level! + 1;
+        child.level = this.level! + 1;
 
-        // if (typeof index === 'undefined' || index < 0) {
-        //     this.nodeData.childNodes!.push(child);
-        // } else {
-        //     this.nodeData.childNodes!.splice(index, 0, child);
-        // }
+        if (typeof index === 'undefined' || index < 0) {
+            this.childNodes!.push(child);
+        } else {
+            this.childNodes!.splice(index, 0, child);
+        }
 
         this.updateLeafState();
     }
 
     public setData(data: any) {
-        let node = this.nodeData;
+        let node = this;
         if (!Array.isArray(data)) {
             NodeManage.markNodeData(node, data);
         }
@@ -64,7 +58,7 @@ export class Node {
      * 设置isLeaf属性
      */
     public updateLeafState(): void {
-        let node = this.nodeData;
+        let node = this;
         // 自己设置时
         if (typeof node.isLeafByUser !== 'undefined') {
             node.isLeaf = node.isLeafByUser;
@@ -85,7 +79,7 @@ export class Node {
      * @param forceInit 前置初始化为数组
      */
     public getChildren(forceInit = false) {
-        let node = this.nodeData;
+        let node = this;
         if (node.level === 0) return node.data;
         const data = node.data;
         if (!data) return null;

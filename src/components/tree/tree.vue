@@ -34,9 +34,9 @@ export default class Tree extends BaseVue {
     this.root = new TreeManage({
       data: this.list,
       params: this.params
-	});
+	}).root;
 	
-	console.log(this.root)
+	console.log("this.root", this.root);
   }
 }
 </script>

@@ -6,26 +6,25 @@ const NODE_KEY = "$treeNodeId";
 
 export class NodeManage {
     public static generateNode(nodeParams: NodeEntity): Node | undefined {
-        let point = new Node();
-        let node = point.nodeData;
+        let node = new Node();
         node.id = ++nodeIdSeed;
         node.visible = true;
         node.parent = null;
 
-        point.objectAssign(node, nodeParams);
+        node.objectAssign(node, nodeParams);
 
         node.level = 0;
         node.childNodes = [];
 
         if (node.parent) {
-            node.level = (node.parent as Node).nodeData.level! + 1;
+            node.level = (node.parent as Node).level! + 1;
         }
 
         const store = node.store;
         if (!store) {
             throw new Error('[Node] store is required!');
         }
-        store.registerNode(point);
+        store.registerNode(node);
         
         const params = store.params;
         if (params && typeof params.isLeaf !== 'undefined') {
@@ -36,7 +35,7 @@ export class NodeManage {
         }
         
         if (node.data) {
-            point.setData(node.data);
+            node.setData(node.data);
         }
 
         if (!Array.isArray(node.data)) {
@@ -48,13 +47,13 @@ export class NodeManage {
 
         // 判断当前节点
         if (key && store.currentNodeKey !== undefined && node.key === store.currentNodeKey) {
-            store.currentNode = point;
-            store.currentNode.nodeData.isCurrent = true;
+            store.currentNode = node;
+            store.currentNode.isCurrent = true;
         }
 
-        point.updateLeafState();
+        node.updateLeafState();
 
-        return point;
+        return node;
     }
 
     public static getPropertyFromData(node: NodeEntity, prop: string) {

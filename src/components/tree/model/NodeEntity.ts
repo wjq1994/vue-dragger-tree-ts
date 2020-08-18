@@ -1,4 +1,4 @@
-import { TreeManage } from './TreeManage'
+import {TreeManage} from './TreeManage'
 
 
 export class NodeEntity {
@@ -6,9 +6,9 @@ export class NodeEntity {
     public key?: number;
     public checked?: Boolean;
     // 存放子节点
-    public childNodes?: Node[];
+    public childNodes?: NodeEntity[];
     // 存放父节点
-    public parent?: Node | null;
+    public parent?: NodeEntity | null;
     // 存放业务数据
     public data: any;
     // 是否展开 默认不展开
@@ -25,4 +25,5 @@ export class NodeEntity {
     public store?: TreeManage;
     // 是否显示
     public visible?: Boolean;
+
 }

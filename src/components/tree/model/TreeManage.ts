@@ -40,7 +40,7 @@ export class TreeManage {
         const key = this.key;
         if (!key) return;
 
-        const nodeKey = node.nodeData.key;
+        const nodeKey = node.key;
         if (nodeKey !== undefined) this.nodesMap[nodeKey] = node;
     }
 }
