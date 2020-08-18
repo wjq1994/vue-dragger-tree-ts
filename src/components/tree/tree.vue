@@ -1,6 +1,8 @@
 <template>
   <div class="tree">
-    <TreeNode :node="root" :list="root.childNodes"></TreeNode>
+    <draggable v-bind="dragOptions" tag="div" class="item-container" :list="root.childNodes">
+      <TreeNode :node="node" :key="node.key" v-for="node in root.childNodes"></TreeNode>
+    </draggable>
     <button @click="onTestClick">测试</button>
   </div>
 </template>
@@ -10,10 +12,11 @@ import TreeNode from "./tree-node.vue";
 import { TreeManage } from "./model/TreeManage";
 import BaseVue from "@/components/base/BaseVue";
 import { Component, Prop, Provide } from "vue-property-decorator";
+import draggable from "../draggable/vuedraggable.js";
 
 @Component({
   name: "Tree",
-  components: { TreeNode }
+  components: { TreeNode, draggable }
 })
 export default class Tree extends BaseVue {
   public root: any = null;
@@ -37,6 +40,13 @@ export default class Tree extends BaseVue {
   public indent?: number;
 
   @Provide('treeInitData') treeInitData = this;
+
+  public dragOptions: any = {
+		animation: 0,
+		group: "description",
+		disabled: false,
+		ghostClass: "ghost"
+	}
 
   public onCreated() {
     this.treeManage = new TreeManage({

@@ -1,10 +1,13 @@
-<template>		
-	<draggable v-bind="dragOptions" tag="div" class="item-container" :list="list">
-		<div class="node" :key="node.data.label" v-for="node in list" @click.stop="handleClick">
+<template>	
+  	<div>
+		<div class="item-container">
+			<div class="node" @click.stop="handleClick">
 			<div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }" class="item">{{ node.data.label }}</div>
-			<tree-node class="item-sub" :node="node" :list="node.childNodes" />
+			<tree-node class="item-sub" :key="childNode.data.label" v-for="childNode in node.childNodes" :node="childNode" />
+			</div>
 		</div>
-	</draggable>
+	</div>	
+	
 </template>
 
 <script lang="ts">
@@ -13,6 +16,7 @@ import Tree from "./tree.vue";
 import { TreeManage } from "./model/TreeManage";
 import BaseVue from "@/components/base/BaseVue";
 import { Component, Prop, Inject, Watch } from "vue-property-decorator";
+import Sortable from "sortablejs";
 
 @Component({
   name: "TreeNode",
@@ -33,13 +37,6 @@ export default class TreeNode extends BaseVue {
 
 	public tree!: Tree;
 
-	public dragOptions: any = {
-		animation: 0,
-		group: "description",
-		disabled: false,
-		ghostClass: "ghost"
-	}
-
 	public onCreated() {
 		// 获取到树组件
 		let parent: any = this.$parent;
@@ -52,8 +49,13 @@ export default class TreeNode extends BaseVue {
 
 	}
 
+	public onMounted() {
+		new Sortable(this.$el as HTMLElement, this.treeInitData.dragOptions);
+	}
+
 	public handleClick() {
 		console.log("this.tree.treeManage: ", this.tree.treeManage);
+		console.log("this.node: ", this.node);
 		const store = this.tree.treeManage;
 		store!.setCurrentNode(this.node);
 		// this.tree.$emit(

@@ -1,6 +1,6 @@
 <template>
   <div>
-      <tree ref='tree' :list='data'></tree>
+      <tree ref='tree' :list='data1'></tree>
   </div>
 </template>
 
@@ -8,9 +8,10 @@
 import BaseVue from '@/components/base/BaseVue';
 // @ts-ignore
 import tree from '../components/tree/tree.vue';
+import mytree from '../components/mytree/tree.vue';
 import { Component } from 'vue-property-decorator';
 
-@Component({ name: 'index', components: { tree } })
+@Component({ name: 'index', components: { tree, mytree } })
 export default class Index extends BaseVue {
     public data: any = [{
           label: '一级 1',
@@ -47,6 +48,19 @@ export default class Index extends BaseVue {
             }],
           }],
         }];
+    public data1: any = [{
+          label: '一级 1',
+          children: [{
+            label: '二级 1-1',
+            children: [{
+              label: '三级 1-1-1',
+            }],
+          }],
+        }];
+    public data0: any = [{
+          label: '一级 1',
+          children: [],
+        }];  
 }
 </script>
 

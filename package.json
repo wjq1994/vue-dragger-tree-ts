@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@types/sortablejs": "^1.10.6",
     "core-js": "^3.6.5",
     "element-ui": "^2.13.2",
     "sortablejs": "^1.10.2",

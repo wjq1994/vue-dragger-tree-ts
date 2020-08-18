@@ -227,7 +227,7 @@ const draggableComponent = {
     });
     !("draggable" in options) && (options.draggable = ">*");
     this._sortable = new Sortable(this.rootContainer, options);
-    console.log("Sortable options: ", options);
+    console.log("Sortable options: ", options, "rootContainer: ", this.rootContainer);
     this.computeIndexes();
   },
 
