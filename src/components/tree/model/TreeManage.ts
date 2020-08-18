@@ -1,13 +1,14 @@
-import { NodeEntity } from './NodeEntity'
-import { NodeManage } from './NodeManage'
+import { NodeEntity } from './NodeEntity';
+import { NodeManage } from './NodeManage';
+import { Node } from './Node'
 
 export class TreeManage {
-    public currentNode?: NodeEntity | null;
-    public currentNodeKey?: string;
+    public currentNode: Node | null;
+    public currentNodeKey: number | null;
     // 业务树列表
     public data: any;
     // 根结点
-    public root?: NodeEntity;
+    public root?: Node;
     // 存放node节点
     public nodesMap: any;
     // 存放默认的一些字段
@@ -16,7 +17,7 @@ export class TreeManage {
 
     constructor(options: any) {
         this.currentNode = null;
-        this.currentNodeKey = "";
+        this.currentNodeKey = null;
 
         for (let option in options) {
             if (options.hasOwnProperty(option)) {
@@ -35,11 +36,11 @@ export class TreeManage {
      * 注册节点
      * @param node 节点
      */
-    public registerNode(node: NodeEntity) {
+    public registerNode(node: Node) {
         const key = this.key;
         if (!key) return;
 
-        const nodeKey = node.key;
+        const nodeKey = node.nodeData.key;
         if (nodeKey !== undefined) this.nodesMap[nodeKey] = node;
     }
 }

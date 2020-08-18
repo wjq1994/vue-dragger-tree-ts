@@ -1,30 +1,32 @@
-import { NodeEntity } from './NodeEntity'
+import { NodeEntity } from './NodeEntity';
+import {Node} from './Node';
 
 let nodeIdSeed = 0;
 const NODE_KEY = "$treeNodeId";
 
 export class NodeManage {
-    public static generateNode(nodeParams: NodeEntity): NodeEntity {
-        let node = new NodeEntity();
+    public static generateNode(nodeParams: NodeEntity): Node | undefined {
+        let point = new Node();
+        let node = point.nodeData;
         node.id = ++nodeIdSeed;
         node.visible = true;
         node.parent = null;
 
-        node = nodeParams;
+        point.objectAssign(node, nodeParams);
 
         node.level = 0;
         node.childNodes = [];
 
         if (node.parent) {
-            node.level = node.parent.level! + 1;
+            node.level = (node.parent as Node).nodeData.level! + 1;
         }
 
         const store = node.store;
         if (!store) {
             throw new Error('[Node] store is required!');
         }
-        store.registerNode(node);
-
+        store.registerNode(point);
+        
         const params = store.params;
         if (params && typeof params.isLeaf !== 'undefined') {
             const isLeaf = NodeManage.getPropertyFromData(node, 'isLeaf');
@@ -32,38 +34,27 @@ export class NodeManage {
                 node.isLeafByUser = isLeaf;
             }
         }
-
-        if (store.lazy !== true && node.data) {
-            NodeManage.setData(node.data);
-
-            if (store.defaultExpandAll) {
-                this.expanded = true;
-            }
-        } else if (this.level > 0 && store.lazy && store.defaultExpandAll) {
-            this.expand();
+        
+        if (node.data) {
+            point.setData(node.data);
         }
-        if (!Array.isArray(this.data)) {
-            markNodeData(this, this.data);
+
+        if (!Array.isArray(node.data)) {
+            NodeManage.markNodeData(node, node.data);
         }
-        if (!this.data) return;
-        const defaultExpandedKeys = store.defaultExpandedKeys;
+        if (!node.data) return;
+
         const key = store.key;
-        if (key && defaultExpandedKeys && defaultExpandedKeys.indexOf(this.key) !== -1) {
-            this.expand(null, store.autoExpandParent);
+
+        // 判断当前节点
+        if (key && store.currentNodeKey !== undefined && node.key === store.currentNodeKey) {
+            store.currentNode = point;
+            store.currentNode.nodeData.isCurrent = true;
         }
 
-        if (key && store.currentNodeKey !== undefined && this.key === store.currentNodeKey) {
-            store.currentNode = this;
-            store.currentNode.isCurrent = true;
-        }
+        point.updateLeafState();
 
-        if (store.lazy) {
-            store._initDefaultCheckedNode(this);
-        }
-
-        this.updateLeafState();
-
-        return node;
+        return point;
     }
 
     public static getPropertyFromData(node: NodeEntity, prop: string) {
@@ -78,26 +69,6 @@ export class NodeManage {
         } else if (typeof config === 'undefined') {
             const dataProp = data[prop];
             return dataProp === undefined ? '' : dataProp;
-        }
-    }
-
-    public static setData(node: NodeEntity, data: any) {
-        if (!Array.isArray(data)) {
-            NodeManage.markNodeData(node, data);
-        }
-
-        node.data = data;
-        node.childNodes = [];
-
-        let children;
-        if (node.level === 0 && node.data instanceof Array) {
-            children = node.data;
-        } else {
-            children = NodeManage.getPropertyFromData(node, 'children') || [];
-        }
-
-        for (let i = 0, j = children.length; i < j; i++) {
-            node.insertChild({ data: children[i] });
         }
     }
 

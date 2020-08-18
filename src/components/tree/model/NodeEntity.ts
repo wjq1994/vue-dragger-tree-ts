@@ -1,4 +1,4 @@
-import {TreeManage} from './TreeManage'
+import { TreeManage } from './TreeManage'
 
 
 export class NodeEntity {
@@ -6,9 +6,9 @@ export class NodeEntity {
     public key?: number;
     public checked?: Boolean;
     // 存放子节点
-    public childNodes?: NodeEntity[];
+    public childNodes?: Node[];
     // 存放父节点
-    public parent?: NodeEntity | null;
+    public parent?: Node | null;
     // 存放业务数据
     public data: any;
     // 是否展开 默认不展开
@@ -25,37 +25,4 @@ export class NodeEntity {
     public store?: TreeManage;
     // 是否显示
     public visible?: Boolean;
-
-    public insertChild(child: NodeEntity, index?: number, batch?: boolean) {
-        if (!(child instanceof Node)) {
-            if (!batch) {
-                const children = this.getChildren(true);
-                if (children.indexOf(child.data) === -1) {
-                    if (typeof index === 'undefined' || index < 0) {
-                        children.push(child.data);
-                    } else {
-                        children.splice(index, 0, child.data);
-                    }
-                }
-            }
-            objectAssign(child, {
-                parent: this,
-                store: this.store
-            });
-            child = new Node(child);
-        }
-
-        child.level = this.level + 1;
-
-        if (typeof index === 'undefined' || index < 0) {
-            this.childNodes.push(child);
-        } else {
-            this.childNodes.splice(index, 0, child);
-        }
-
-        this.updateLeafState();
-    } 
-
-
-
 }
