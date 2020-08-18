@@ -43,4 +43,17 @@ export class TreeManage {
         const nodeKey = node.key;
         if (nodeKey !== undefined) this.nodesMap[nodeKey] = node;
     }
+
+    /**
+     * 设置当前节点
+     * @param node 节点
+     */
+    public setCurrentNode(node: Node) {
+        const prevCurrentNode = this.currentNode;
+        if (prevCurrentNode) {
+            prevCurrentNode.isCurrent = false;
+        }
+        this.currentNode = node;
+        this.currentNode.isCurrent = true;
+    }
 }

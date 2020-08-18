@@ -254,13 +254,13 @@ const draggableComponent = {
       deep: true
     },
 
-    $attrs: {
-      handler(newOptionValue) {
-        console.log("watch $attrs: ", newOptionValue);
-        this.updateOptions(newOptionValue);
-      },
-      deep: true
-    },
+    // $attrs: {
+    //   handler(newOptionValue) {
+    //     console.log("watch $attrs: ", newOptionValue);
+    //     this.updateOptions(newOptionValue);
+    //   },
+    //   deep: true
+    // },
 
     realList() {
       this.computeIndexes();

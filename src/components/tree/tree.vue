@@ -1,6 +1,7 @@
 <template>
   <div class="tree">
     <TreeNode :node="root" :list="root.childNodes"></TreeNode>
+    <button @click="onTestClick">测试</button>
   </div>
 </template>
 
@@ -8,7 +9,7 @@
 import TreeNode from "./tree-node.vue";
 import { TreeManage } from "./model/TreeManage";
 import BaseVue from "@/components/base/BaseVue";
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Provide } from "vue-property-decorator";
 
 @Component({
   name: "Tree",
@@ -17,6 +18,7 @@ import { Component, Prop } from "vue-property-decorator";
 export default class Tree extends BaseVue {
   public root: any = null;
   public isTree: boolean = true;
+  public treeManage?: TreeManage;
 
   // 树列表
   @Prop({ required: false, type: Array, default: () => [] })
@@ -30,13 +32,24 @@ export default class Tree extends BaseVue {
   })
   public params: any;
 
+  // 树列表
+  @Prop({ required: false, type: Number, default: 20 })
+  public indent?: number;
+
+  @Provide('treeInitData') treeInitData = this;
+
   public onCreated() {
-    this.root = new TreeManage({
+    this.treeManage = new TreeManage({
       data: this.list,
       params: this.params
-	}).root;
+	  })
+    this.root = this.treeManage.root;
 	
 	console.log("this.root", this.root);
+  }
+
+  public onTestClick() {
+
   }
 }
 </script>

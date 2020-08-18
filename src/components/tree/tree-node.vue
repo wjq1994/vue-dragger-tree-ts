@@ -1,65 +1,76 @@
-<template>
+<template>		
 	<draggable v-bind="dragOptions" tag="div" class="item-container" :list="list">
-		<div class="node" :key="el.label" v-for="el in list">
-			<div style="padding-left: 18px;text-align: left" class="item">{{ el.data.label }}</div>
-			<tree-node class="item-sub" :node="el" :list="el.childNodes" />
+		<div class="node" :key="node.data.label" v-for="node in list" @click.stop="handleClick">
+			<div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }" class="item">{{ node.data.label }}</div>
+			<tree-node class="item-sub" :node="node" :list="node.childNodes" />
 		</div>
 	</draggable>
 </template>
 
-<script>
+<script lang="ts">
 import draggable from "../draggable/vuedraggable.js";
-export default {
-	name: "TreeNode",
-	components: {
-		draggable
-	},
-	data() {
-		return {};
-	},
+import Tree from "./tree.vue";
+import { TreeManage } from "./model/TreeManage";
+import BaseVue from "@/components/base/BaseVue";
+import { Component, Prop, Inject, Watch } from "vue-property-decorator";
 
-	props: {
-		value: {
-			required: false,
-			type: Array,
-			default: null
-		},
-		list: {
-			required: false,
-			type: Array,
-			default: null
-		},
-		node: {
-			required: true,
-			type: Object,
-			default: null
-		}
-	},
-
-	computed: {
-        dragOptions() {
-			return {
-				animation: 0,
-				group: "description",
-				disabled: false,
-				ghostClass: "ghost"
-			};
-		},
-		// this.value when input = v-model
-		// this.list  when input != v-model
-		realValue() {
-			return this.value ? this.value : this.list;
-		}
-	},
-
-	methods: {
+@Component({
+  name: "TreeNode",
+  components: {	draggable  }
+})
+export default class TreeNode extends BaseVue {
 	
-	},
+	// 树列表
+	@Prop({ required: false, type: Array, default: null })
+	public list?: any[];
 
-	created() {},
+	// 树列表
+	@Prop({ required: false, type: Object, default: null })
+	public node?: any;
 
-	mounted() {},
+	// tree组件created之前的静态
+	@Inject("treeInitData") private readonly treeInitData!: any;
 
-	updated() {}
+	public tree!: Tree;
+
+	public dragOptions: any = {
+		animation: 0,
+		group: "description",
+		disabled: false,
+		ghostClass: "ghost"
+	}
+
+	public onCreated() {
+		// 获取到树组件
+		let parent: any = this.$parent;
+
+		while(!parent.isTree) {
+			parent = parent.$parent;
+		}
+
+		this.tree = parent;
+
+	}
+
+	public handleClick() {
+		console.log("this.tree.treeManage: ", this.tree.treeManage);
+		const store = this.tree.treeManage;
+		store!.setCurrentNode(this.node);
+		// this.tree.$emit(
+		// 	"current-change",
+		// 	store.currentNode ? store.currentNode.data : null,
+		// 	store.currentNode
+		// );
+		// this.tree.currentNode = this;
+		// if (this.tree.expandOnClickNode) {
+		// 	this.handleExpandIconClick();
+		// }
+		// if (this.tree.checkOnClickNode && !this.node.disabled) {
+		// 	this.handleCheckChange(null, {
+		// 		target: { checked: !this.node.checked }
+		// 	});
+		// }
+		// this.tree.$emit("node-click", this.node.data, this.node, this);
+	}
 };
 </script>
