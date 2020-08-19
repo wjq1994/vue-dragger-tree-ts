@@ -68,12 +68,12 @@ export default class Tree extends BaseVue {
 		})
 		this.root = this.treeManage.root;
 		let dragState = this.dragState;
-		this.$on("tree-node-drag-start", (event, treeNode) => {
+		this.$on("tree-node-drag-start", (event: any, treeNode: any) => {
 			dragState.draggingNode = treeNode;
 			this.$emit("node-drag-start", treeNode.node, event);
 		});
 
-		this.$on("tree-node-drag-over", (event, treeNode) => {
+		this.$on("tree-node-drag-over", (event: any, treeNode: any) => {
 			const dropNode = findNearestComponent(event.target, "ElTreeNode");
 			const oldDropNode = dragState.dropNode;
 
@@ -90,7 +90,7 @@ export default class Tree extends BaseVue {
 			);
 		});
 
-		this.$on("tree-node-drag-end", event => {
+		this.$on("tree-node-drag-end", (event: any) => {
 			const { draggingNode, dropType, dropNode } = dragState;
 			event.preventDefault();
 			event.dataTransfer.dropEffect = "move";
@@ -114,7 +114,7 @@ export default class Tree extends BaseVue {
 					dropNode.node.insertChild(draggingNodeCopy);
 				}
 				if (dropType !== "none") {
-					this.treeManage.registerNode(draggingNodeCopy);
+					this.treeManage!.registerNode(draggingNodeCopy!);
 				}
 				removeClass(dropNode.$el, "is-drop-inner");
 
