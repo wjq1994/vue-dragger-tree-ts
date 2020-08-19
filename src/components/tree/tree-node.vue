@@ -132,22 +132,25 @@ export default class TreeNode extends BaseVue {
 
 	public onDragStart(evt) {
 		console.log(this.node.data.label, 'onDragStart: ', evt);
-		this.tree.$emit('tree-node-drag-start', evt, this);
+		this.context = this.getUnderlyingVm(evt.item);
+		evt.item._underlying_vm_ = this.clone(this.context.element);
+		draggingElement = evt.item;
+		// this.tree.$emit('tree-node-drag-start', evt, this);
 	}
 
 	public onDragAdd(evt) {
 		console.log(this.node.data.label, 'onDragAdd: ', evt);
-		this.tree.$emit('tree-node-drag-add', evt, this);
+		// this.tree.$emit('tree-node-drag-add', evt, this);
 	}
 
 	public onDragRemove(evt) {
 		console.log(this.node.data.label, 'onDragRemove: ', evt);
-		this.tree.$emit('tree-node-drag-remove', evt, this);
+		// this.tree.$emit('tree-node-drag-remove', evt, this);
 	}
 
 	public onDragUpdate(evt) {
 		console.log(this.node.data.label, 'onDragUpdate: ', evt);
-		this.tree.$emit('tree-node-drag-update', evt, this);
+		// this.tree.$emit('tree-node-drag-update', evt, this);
 	}
 
 	public onDragMove(evt, originalEvent) {
@@ -156,7 +159,7 @@ export default class TreeNode extends BaseVue {
 
 	public onDragEnd() {
 		console.log(this.node.data.label, 'onDragEnd')
-		this.tree.$emit('tree-node-drag-end');
+		// this.tree.$emit('tree-node-drag-end');
 	}
 
 	public clone<T>(obj: T): T {
