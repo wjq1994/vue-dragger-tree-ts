@@ -1,6 +1,6 @@
 <template>
   <div>
-      <tree nodeKey="id" ref='tree' :list='data1'></tree>
+      <tree nodeKey="id" ref='tree' :list='data'></tree>
       <eltree node-key="id" :data="data" :props="defaultProps" ></eltree>
   </div>
 </template>

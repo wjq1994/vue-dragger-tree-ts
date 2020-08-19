@@ -4,10 +4,6 @@
 			<div style="padding-left: 18px;text-align: left" class="item">{{ el.label }}</div>
 			<tree-node class="item-sub" :node="el" :list="el.childNodes" />
 		</div>
-		<div slot="AAAA" slot-scope="{ node, data }">
-			{{node}}
-		</div>
-		<div slot="BBBB"></div>
 	</draggable>
 </template>
 

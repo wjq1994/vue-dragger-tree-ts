@@ -1,14 +1,13 @@
 <template>
 	<div class="tree">
-		<draggable v-bind="dragOptions" tag="div" class="item-container" :list="root.childNodes">
-			<TreeNode :node="node" :key="getNodeKey(node)" v-for="node in root.childNodes"></TreeNode>
-		</draggable>
+		<TreeBranch nodeKey="id" :branch-list="root.childNodes"></TreeBranch>
 		<button @click="onTestClick">测试</button>
 	</div>
 </template>
 
 <script lang='ts'>
 import TreeNode from "./tree-node.vue";
+import TreeBranch from "./tree-branch.vue";
 import { TreeManage } from "./model/TreeManage";
 import BaseVue from "@/components/base/BaseVue";
 import { Component, Prop, Provide } from "vue-property-decorator";
@@ -20,7 +19,7 @@ import { Node } from "./model/Node"
 
 @Component({
 	name: "Tree",
-	components: { TreeNode, draggable }
+	components: { TreeBranch, draggable }
 })
 export default class Tree extends BaseVue {
 	public root: any = null;
@@ -77,12 +76,12 @@ export default class Tree extends BaseVue {
 		let dragState = this.dragState;
 
 		this.$on("tree-node-drag-start", (event: any, treeNode: TreeNode) => {
-			dragState.draggingNode = treeNode;
+			//dragState.draggingNode = treeNode;
 			this.$emit("node-drag-start", treeNode.node, event);
 		});
 
 		this.$on("tree-node-drag-remove", (event: any, treeNode: TreeNode) => {
-			this.treeManage.remove(treeNode.node);
+			// this.treeManage.remove(treeNode.node);
 		});
 
 		this.$on("tree-node-drag-update", (event: any, treeNode: TreeNode) => {
@@ -91,8 +90,6 @@ export default class Tree extends BaseVue {
 
 		this.$on("tree-node-drag-add", (event: any, treeNode: TreeNode) => {
 			const { draggingNode } = dragState;
-			treeNode.node.insertChild(draggingNode.node);
-			treeNode.refresh();
 		});
 
 		this.$on("tree-node-drag-end", (event: any) => {
