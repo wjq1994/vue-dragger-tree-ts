@@ -1,8 +1,8 @@
 declare namespace helper {
     export function insertNodeAt(): void;
-    export function camelize(): void; 
-    export function console(): void;
-    export function removeNode(): void;  
+    export function camelize(key: string): string; 
+    export function removeNode(): void;
+    export function findNearestComponent(element: string, componentName: string): any; 
 }
 
 export = helper

@@ -1,11 +1,3 @@
-function getConsole() {
-  if (typeof window !== "undefined") {
-    return window.console;
-  }
-  return global.console;
-}
-const console = getConsole();
-
 function cached(fn) {
   const cache = Object.create(null);
   return function cachedFn(str) {
@@ -33,4 +25,15 @@ function insertNodeAt(fatherNode, node, position) {
   fatherNode.insertBefore(node, refNode);
 }
 
-export { insertNodeAt, camelize, console, removeNode };
+const findNearestComponent = (element, componentName) => {
+  let target = element;
+  while (target && target.tagName !== 'BODY') {
+    if (target.__vue__ && target.__vue__.$options.name === componentName) {
+      return target.__vue__;
+    }
+    target = target.parentNode;
+  }
+  return null;
+};
+
+export { insertNodeAt, camelize, findNearestComponent, removeNode };
