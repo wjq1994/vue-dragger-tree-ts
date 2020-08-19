@@ -1,12 +1,10 @@
 <template>
-	<div>
-		<div class="item-container">
-			<div class="node" @click.stop="handleClick">
-				<div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }"
-					class="item">{{ node.data.label }}</div>
-				<tree-node class="item-sub" :key="childNode.data.label" v-for="childNode in node.childNodes"
-					:node="childNode" />
-			</div>
+	<div class="node-container">
+		<div class="node" @click.stop="handleClick">
+			<div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }"
+				class="item">{{ node.data.label }}</div>
+			<tree-node class="item-sub" :key="getNodeKey(childNode)" v-for="childNode in node.childNodes"
+				:node="childNode" />
 		</div>
 	</div>
 </template>
@@ -19,6 +17,8 @@ import BaseVue from "@/components/base/BaseVue";
 import { Component, Prop, Inject, Watch } from "vue-property-decorator";
 import Sortable from "sortablejs";
 import { insertNodeAt, camelize, removeNode } from "../../utils/helper";
+import { Node } from "./model/Node";
+import { NodeManage } from "./model/NodeManage"
 
 @Component({
 	name: "TreeNode",
@@ -34,14 +34,14 @@ export default class TreeNode extends BaseVue {
 
 	public tree!: Tree;
 
-  public context: any = {};
+	public context: any = {};
 
 	// 拖拽插件
-	private _sortable!: Sortable;
+	public sortable!: Sortable;
 
 	// 监听列表
-	private _eventsListened: String[] = ["Start", "Add", "Remove", "Update", "End"];
-	private _eventsToEmit: String[] = ["Choose", "Unchoose", "Sort", "Filter", "Clone"];
+	public eventsListened: any[] = ["Start", "Add", "Remove", "Update", "End"];
+	public eventsToEmit: any[] = ["Choose", "Unchoose", "Sort", "Filter", "Clone"];
 
 	public onCreated() {
 		// 获取到树组件
@@ -52,20 +52,22 @@ export default class TreeNode extends BaseVue {
 		}
 
 		this.tree = parent;
+
 	}
 
 	public onMounted() {
-		this.getSortableOptions(this.treeInitData.dragOptions);
+		this.getSortableOptions();
 	}
 
 
-	public getSortableOptions(treeDragOptions: any) {
+	public getSortableOptions() {
+		let treeDragOptions = this.treeInitData.dragOptions;
 		const optionsAdded = {};
-		this._eventsListened.forEach(elt => {
+		this.eventsListened.forEach(elt => {
 			optionsAdded["on" + elt] = this.delegateAndEmit.call(this, elt);
 		});
 
-		this._eventsToEmit.forEach(elt => {
+		this.eventsToEmit.forEach(elt => {
 			optionsAdded["on" + elt] = this.emit.bind(this, elt);
 		});
 
@@ -81,12 +83,16 @@ export default class TreeNode extends BaseVue {
 		});
 
 		!("draggable" in options) && (options.draggable = ">*");
-		this._sortable = new Sortable(this.$el as HTMLElement, options);
+		this.sortable = new Sortable(this.$el as HTMLElement, options);
+	}
+
+	public refresh() {
+		this.getSortableOptions()
 	}
 
 	public handleClick() {
-		console.log("this.tree.treeManage: ", this.tree.treeManage);
-		console.log("this.node: ", this.node);
+		console.log(this.node.data.label, "this.tree.treeManage: ", this.tree.treeManage);
+		console.log(this.node.data.label, "this.node: ", this.node);
 		const store = this.tree.treeManage;
 		store!.setCurrentNode(this.node);
 
@@ -120,26 +126,45 @@ export default class TreeNode extends BaseVue {
 		};
 	}
 
-  public getUnderlyingVm() {
-    const index = computeVmIndex(this.getChildrenNodes() || [], htmlElt);
-      if (index === -1) {
-        //Edge case during move callback: related element might be
-        //an element different from collection
-        return null;
-      }
-      const element = this.realList[index];
-      return { index, element };
-  }
+	public onBeforeDestroy() {
+		this.sortable && this.sortable.destroy();
+	}
 
-  public onDragStart(evt) {
-    console.log('onDragStart: ', evt)
-    this.context = this.getUnderlyingVm(evt.item);
-    evt.item._underlying_vm_ = this.clone(this.context.element);
-    draggingElement = evt.item;
-  }
+	public onDragStart(evt) {
+		console.log(this.node.data.label, 'onDragStart: ', evt);
+		this.tree.$emit('tree-node-drag-start', evt, this);
+	}
 
-  public clone<T>(obj: T) :T{
-    return obj;
-  }
+	public onDragAdd(evt) {
+		console.log(this.node.data.label, 'onDragAdd: ', evt);
+		this.tree.$emit('tree-node-drag-add', evt, this);
+	}
+
+	public onDragRemove(evt) {
+		console.log(this.node.data.label, 'onDragRemove: ', evt);
+		this.tree.$emit('tree-node-drag-remove', evt, this);
+	}
+
+	public onDragUpdate(evt) {
+		console.log(this.node.data.label, 'onDragUpdate: ', evt);
+		this.tree.$emit('tree-node-drag-update', evt, this);
+	}
+
+	public onDragMove(evt, originalEvent) {
+		console.log(this.node.data.label, 'onDragMove: ', evt)
+	}
+
+	public onDragEnd() {
+		console.log(this.node.data.label, 'onDragEnd')
+		this.tree.$emit('tree-node-drag-end');
+	}
+
+	public clone<T>(obj: T): T {
+		return obj;
+	}
+
+	public getNodeKey(node: Node) {
+		return NodeManage.getNodeKey(this.tree.nodeKey, node.data);
+	}
 }
 </script>

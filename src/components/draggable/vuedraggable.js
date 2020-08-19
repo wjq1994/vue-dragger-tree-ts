@@ -168,16 +168,13 @@ const draggableComponent = {
       this.$slots,
       this.$scopedSlots
     );
-    console.log("children: ", children);
     this.headerOffset = headerOffset;
     this.footerOffset = footerOffset;
     const attributes = getComponentAttributes(this.$attrs, this.componentData);
-    console.log("attributes: ", attributes);
     return h(this.getTag(), attributes, children);
   },
 
   created() {
-    console.log("执行这里draggable created");
     if (this.list !== null && this.value !== null) {
       console.error(
         "Value and list props are mutually exclusive! Please set one or another."
@@ -198,7 +195,6 @@ const draggableComponent = {
   },
 
   mounted() {
-    console.log("执行这里draggable mounted");
     this.noneFunctionalComponentMode =
       this.getTag().toLowerCase() !== this.$el.nodeName.toLowerCase() &&
       !this.getIsFunctional();
@@ -227,7 +223,6 @@ const draggableComponent = {
     });
     !("draggable" in options) && (options.draggable = ">*");
     this._sortable = new Sortable(this.rootContainer, options);
-    console.log("Sortable options: ", options, "rootContainer: ", this.rootContainer);
     this.computeIndexes();
   },
 
@@ -248,7 +243,6 @@ const draggableComponent = {
   watch: {
     options: {
       handler(newOptionValue) {
-        console.log("watch options: ", newOptionValue);
         this.updateOptions(newOptionValue);
       },
       deep: true

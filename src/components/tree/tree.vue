@@ -1,7 +1,7 @@
 <template>
 	<div class="tree">
 		<draggable v-bind="dragOptions" tag="div" class="item-container" :list="root.childNodes">
-			<TreeNode :node="node" :key="node.key" v-for="node in root.childNodes"></TreeNode>
+			<TreeNode :node="node" :key="getNodeKey(node)" v-for="node in root.childNodes"></TreeNode>
 		</draggable>
 		<button @click="onTestClick">测试</button>
 	</div>
@@ -15,7 +15,8 @@ import { Component, Prop, Provide } from "vue-property-decorator";
 import draggable from "../draggable/vuedraggable.js";
 import { findNearestComponent } from "../../utils/helper"
 import { addClass, removeClass } from "../../utils/dom"
-import {NodeManage} from "./model/NodeManage"
+import { NodeManage } from "./model/NodeManage"
+import { Node } from "./model/Node"
 
 @Component({
 	name: "Tree",
@@ -38,6 +39,10 @@ export default class Tree extends BaseVue {
 	})
 	public params: any;
 
+	// node唯一标识字段
+	@Prop({ required: true, type: String, default: "" })
+	public nodeKey: string;
+
 	// 树列表
 	@Prop({ required: false, type: Number, default: 20 })
 	public indent?: number;
@@ -55,105 +60,104 @@ export default class Tree extends BaseVue {
 	}
 
 	public dragState: any = {
-		showDropIndicator: false,
-		draggingNode: null,
-		dropNode: null,
-		allowDrop: true
+		draggingNode: null
+	}
+
+	public getNodeKey(node: Node) {
+		return NodeManage.getNodeKey(this.nodeKey, node.data);
 	}
 
 	public onCreated() {
 		this.treeManage = new TreeManage({
+			key: this.nodeKey,
 			data: this.list,
 			params: this.params
 		})
 		this.root = this.treeManage.root;
 		let dragState = this.dragState;
-		this.$on("tree-node-drag-start", (event: any, treeNode: any) => {
+
+		this.$on("tree-node-drag-start", (event: any, treeNode: TreeNode) => {
 			dragState.draggingNode = treeNode;
 			this.$emit("node-drag-start", treeNode.node, event);
 		});
 
-		this.$on("tree-node-drag-over", (event: any, treeNode: any) => {
-			const dropNode = findNearestComponent(event.target, "ElTreeNode");
-			const oldDropNode = dragState.dropNode;
+		this.$on("tree-node-drag-remove", (event: any, treeNode: TreeNode) => {
+			this.treeManage.remove(treeNode.node);
+		});
 
-			const draggingNode = dragState.draggingNode;
-			if (!draggingNode || !dropNode) return;
+		this.$on("tree-node-drag-update", (event: any, treeNode: TreeNode) => {
+			treeNode.node.parent && treeNode.node.parent.insertChild(treeNode.node);
+		});
 
-			dragState.dropNode = dropNode;
-
-			this.$emit(
-				"node-drag-over",
-				draggingNode.node,
-				dropNode.node,
-				event
-			);
+		this.$on("tree-node-drag-add", (event: any, treeNode: TreeNode) => {
+			const { draggingNode } = dragState;
+			treeNode.node.insertChild(draggingNode.node);
+			treeNode.refresh();
 		});
 
 		this.$on("tree-node-drag-end", (event: any) => {
-			const { draggingNode, dropType, dropNode } = dragState;
-			event.preventDefault();
-			event.dataTransfer.dropEffect = "move";
-
-			if (draggingNode && dropNode) {
-				const draggingNodeCopy = NodeManage.generateNode({data: draggingNode.node.data});
-				if (dropType !== "none") {
-					draggingNode.node.remove();
-				}
-				if (dropType === "before") {
-					dropNode.node.parent.insertBefore(
-						draggingNodeCopy,
-						dropNode.node
-					);
-				} else if (dropType === "after") {
-					dropNode.node.parent.insertAfter(
-						draggingNodeCopy,
-						dropNode.node
-					);
-				} else if (dropType === "inner") {
-					dropNode.node.insertChild(draggingNodeCopy);
-				}
-				if (dropType !== "none") {
-					this.treeManage!.registerNode(draggingNodeCopy!);
-				}
-				removeClass(dropNode.$el, "is-drop-inner");
-
-				this.$emit(
-					"node-drag-end",
-					draggingNode.node,
-					dropNode.node,
-					dropType,
-					event
-				);
-				if (dropType !== "none") {
-					this.$emit(
-						"node-drop",
-						draggingNode.node,
-						dropNode.node,
-						dropType,
-						event
-					);
-				}
-			}
-			if (draggingNode && !dropNode) {
-				this.$emit(
-					"node-drag-end",
-					draggingNode.node,
-					null,
-					dropType,
-					event
-				);
-			}
-
-			dragState.showDropIndicator = false;
+			const { draggingNode } = dragState;
 			dragState.draggingNode = null;
-			dragState.dropNode = null;
-			dragState.allowDrop = true;
+			console.log("-----this.root: ", this.root);
+			// if (draggingNode && dropNode) {
+			// 	const draggingNodeCopy = NodeManage.generateNode({ data: draggingNode.node.data });
+			// 	if (dropType !== "none") {
+			// 		draggingNode.node.remove();
+			// 	}
+			// 	if (dropType === "before") {
+			// 		dropNode.node.parent.insertBefore(
+			// 			draggingNodeCopy,
+			// 			dropNode.node
+			// 		);
+			// 	} else if (dropType === "after") {
+			// 		dropNode.node.parent.insertAfter(
+			// 			draggingNodeCopy,
+			// 			dropNode.node
+			// 		);
+			// 	} else if (dropType === "inner") {
+			// 		dropNode.node.insertChild(draggingNodeCopy);
+			// 	}
+			// 	if (dropType !== "none") {
+			// 		this.treeManage!.registerNode(draggingNodeCopy!);
+			// 	}
+			// 	removeClass(dropNode.$el, "is-drop-inner");
+
+			// 	this.$emit(
+			// 		"node-drag-end",
+			// 		draggingNode.node,
+			// 		dropNode.node,
+			// 		dropType,
+			// 		event
+			// 	);
+			// 	if (dropType !== "none") {
+			// 		this.$emit(
+			// 			"node-drop",
+			// 			draggingNode.node,
+			// 			dropNode.node,
+			// 			dropType,
+			// 			event
+			// 		);
+			// 	}
+			// }
+			// if (draggingNode && !dropNode) {
+			// 	this.$emit(
+			// 		"node-drag-end",
+			// 		draggingNode.node,
+			// 		null,
+			// 		dropType,
+			// 		event
+			// 	);
+			// }
+
+			// dragState.showDropIndicator = false;
+			// dragState.draggingNode = null;
+			// dragState.dropNode = null;
+			// dragState.allowDrop = true;
 		});
 	}
 
 	public onTestClick() {
-
+		console.log("------", JSON.stringify(this.treeManage.nodesMap));
 	}
 }
 </script>

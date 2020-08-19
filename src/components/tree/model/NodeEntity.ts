@@ -3,7 +3,7 @@ import {TreeManage} from './TreeManage'
 
 export class NodeEntity {
     public id?: number;
-    public key?: number;
+    public key?: string;
     public checked?: Boolean;
     // 存放子节点
     public childNodes?: NodeEntity[];

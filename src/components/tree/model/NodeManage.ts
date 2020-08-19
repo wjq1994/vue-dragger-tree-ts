@@ -1,10 +1,13 @@
 import { NodeEntity } from './NodeEntity';
-import {Node} from './Node';
+import { Node } from './Node';
 
 let nodeIdSeed = 0;
 const NODE_KEY = "$treeNodeId";
 
 export class NodeManage {
+    // 存放node节点
+    public static nodesMap: any;
+    
     public static generateNode(nodeParams: NodeEntity): Node | undefined {
         let node = new Node();
         node.id = ++nodeIdSeed;
@@ -25,7 +28,7 @@ export class NodeManage {
             throw new Error('[Node] store is required!');
         }
         store.registerNode(node);
-        
+
         const params = store.params;
         if (params && typeof params.isLeaf !== 'undefined') {
             const isLeaf = NodeManage.getPropertyFromData(node, 'isLeaf');
@@ -33,7 +36,7 @@ export class NodeManage {
                 node.isLeafByUser = isLeaf;
             }
         }
-        
+
         if (node.data) {
             node.setData(node.data);
         }
@@ -79,5 +82,10 @@ export class NodeManage {
             configurable: false,
             writable: false
         });
+    }
+
+    public static getNodeKey(key: string, data: any) {
+        if (!key) return data[NODE_KEY];
+        return data[key];
     }
 }

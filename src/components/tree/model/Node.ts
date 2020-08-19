@@ -120,4 +120,22 @@ export class Node extends NodeEntity {
 
         return target;
     };
+
+    public removeChild(child: Node) {
+        const children = this.getChildren() || [];
+        const dataIndex = children.indexOf(child.data);
+        if (dataIndex > -1) {
+            children.splice(dataIndex, 1);
+        }
+
+        const index = this.childNodes.indexOf(child);
+
+        if (index > -1) {
+            this.store && this.store.deregisterNode(child);
+            child.parent = null;
+            this.childNodes.splice(index, 1);
+        }
+
+        this.updateLeafState();
+    }
 }

@@ -1,3 +1,7 @@
+import {r} from './dom'
+
+
+
 function cached(fn) {
   const cache = Object.create(null);
   return function cachedFn(str) {
