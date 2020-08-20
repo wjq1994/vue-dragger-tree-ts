@@ -2,6 +2,9 @@ import { NodeEntity } from './NodeEntity';
 import { NodeManage } from './NodeManage';
 import { Node } from './Node'
 
+type NodesMap = {
+    [proppName:string]: Node;
+};
 export class TreeManage {
     public currentNode: Node | null;
     public currentNodeKey: string | null;
@@ -10,7 +13,7 @@ export class TreeManage {
     // 根结点
     public root?: Node;
     // 存放node节点
-    public nodesMap: any = {};
+    public nodesMap: NodesMap;
     // 存放默认的一些字段
     public params: any;
     // node节点唯一标识

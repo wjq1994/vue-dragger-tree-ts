@@ -1,5 +1,5 @@
 import {TreeManage} from './TreeManage'
-
+import {Node} from './Node'
 
 export class NodeEntity {
     public id?: number;
@@ -8,7 +8,7 @@ export class NodeEntity {
     // 存放子节点
     public childNodes?: NodeEntity[];
     // 存放父节点
-    public parent?: NodeEntity | null;
+    public parent?: Node | null;
     // 存放业务数据
     public data: any;
     // 是否展开 默认不展开
