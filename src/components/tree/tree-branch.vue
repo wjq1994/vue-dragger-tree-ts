@@ -1,11 +1,11 @@
 <template>
-  <div class="branch">
-    <TreeNode :node="node" :key="getNodeKey(node)" v-for="node in branchList">
-		<template v-slot:branch="slotProps">
-			<TreeBranch nodeKey="id" :branch-list="slotProps.node.childNodes" ></TreeBranch>
-		</template>
-	</TreeNode>
-  </div>
+	<div class="branch">
+		<TreeNode :node="node" :key="getNodeKey(node)" v-for="node in branchList">
+			<template v-slot:branch="slotProps">
+				<TreeBranch :root="slotProps.node" nodeKey="id" :branch-list="slotProps.node.childNodes"></TreeBranch>
+			</template>
+		</TreeNode>
+	</div>
 </template>
 
 <script lang='ts'>
@@ -22,239 +22,205 @@ import Sortable from "sortablejs";
 import { insertNodeAt, camelize, removeNode } from "../../utils/helper";
 
 @Component({
-  name: "TreeBranch",
-  components: { TreeNode, draggable },
+	name: "TreeBranch",
+	components: { TreeNode, draggable },
 })
 export default class Tree extends BaseVue {
-  public tree!: Tree;
+	public tree!: Tree;
 
-  // node唯一标识字段
-  @Prop({ required: true, type: String, default: "" })
-  public nodeKey: string;
+	// node唯一标识字段
+	@Prop({ required: false, type: Object, default: "" })
+	public root: any;
 
-  // 分支列表
-  @Prop({ required: false, type: Array, default: () => [] })
-  public branchList?: any[];
+	// node唯一标识字段
+	@Prop({ required: true, type: String, default: "" })
+	public nodeKey: string;
 
-// tree组件created之前的静态
-  @Inject("treeInitData") private readonly treeInitData!: any;
+	// 分支列表
+	@Prop({ required: false, type: Array, default: () => [] })
+	public branchList?: any[];
 
-  // 拖拽插件
-  public sortable!: Sortable;
+	// tree组件created之前的静态
+	@Inject("treeInitData") private readonly treeInitData!: any;
 
-  // 记录拖拽元素
-  public draggingElement: any;
+	// 拖拽插件
+	public sortable!: Sortable;
 
-  public visibleIndexes: number[];
-  public context: any = {};
-  // 监听列表
-  public eventsListened: any[] = ["Start", "Add", "Remove", "Update", "End"];
-  public eventsToEmit: any[] = [
-    "Choose",
-    "Unchoose",
-    "Sort",
-    "Filter",
-    "Clone",
-  ];
+	// 记录拖拽元素
+	public draggingElement: any;
 
-  public dragState: any = {
-    draggingNode: null,
-  };
+	public visibleIndexes: number[];
+	public context: any = {};
+	// 监听列表
+	public eventsListened: any[] = ["Start", "Add", "Remove", "Update", "End"];
+	public eventsToEmit: any[] = [
+		"Choose",
+		"Unchoose",
+		"Sort",
+		"Filter",
+		"Clone",
+	];
 
-  public getNodeKey(node: Node) {
-    return NodeManage.getNodeKey(this.nodeKey, node.data);
-  }
+	public dragState: any = {
+		draggingNode: null,
+	};
 
-  public onCreated() {
-    // 获取到树组件
-    let parent: any = this.$parent;
+	public getNodeKey(node: Node) {
+		return NodeManage.getNodeKey(this.nodeKey, node.data);
+	}
 
-    while (!parent.isTree) {
-      parent = parent.$parent;
-    }
+	public onCreated() {
+		// 获取到树组件
+		let parent: any = this.$parent;
 
-    this.tree = parent;
-  }
+		while (!parent.isTree) {
+			parent = parent.$parent;
+		}
 
-  public onMounted() {
-    this.getSortableOptions();
-  }
+		this.tree = parent;
+	}
 
-  public getSortableOptions() {
-    let treeDragOptions = this.treeInitData.dragOptions;
-    const optionsAdded = {};
-    this.eventsListened.forEach((elt) => {
-      optionsAdded["on" + elt] = this.delegateAndEmit.call(this, elt);
-    });
+	public onMounted() {
+		this.getSortableOptions();
+	}
 
-    this.eventsToEmit.forEach((elt) => {
-      optionsAdded["on" + elt] = this.emit.bind(this, elt);
-    });
+	public getSortableOptions() {
+		let treeDragOptions = this.treeInitData.dragOptions;
+		const optionsAdded = {};
+		this.eventsListened.forEach((elt) => {
+			optionsAdded["on" + elt] = this.delegateAndEmit.call(this, elt);
+		});
 
-    const attributes = Object.keys(this.$attrs).reduce((res, key) => {
-      res[camelize(key)] = this.$attrs[key];
-      return res;
-    }, {});
+		this.eventsToEmit.forEach((elt) => {
+			optionsAdded["on" + elt] = this.emit.bind(this, elt);
+		});
 
-    const options = Object.assign(
-      {},
-      treeDragOptions,
-      attributes,
-      optionsAdded,
-      {
-        onMove: (evt, originalEvent) => {
-          return this.onDragMove(evt, originalEvent);
-        },
-      }
-    );
+		const attributes = Object.keys(this.$attrs).reduce((res, key) => {
+			res[camelize(key)] = this.$attrs[key];
+			return res;
+		}, {});
 
-    !("draggable" in options) && (options.draggable = ">*");
-    // 计算子节点的index
-    this.computeIndexes();
-    this.sortable = new Sortable(this.$el as HTMLElement, options);
-  }
+		const options = Object.assign(
+			{},
+			treeDragOptions,
+			attributes,
+			optionsAdded,
+			{
+				onMove: (evt, originalEvent) => {
+					return this.onDragMove(evt, originalEvent);
+				},
+			}
+		);
 
-  public refresh() {
-    this.getSortableOptions();
-  }
+		!("draggable" in options) && (options.draggable = ">*");
 
-  public emit(evtName: string, evtData: any) {
-    this.$nextTick(() => this.$emit(evtName.toLowerCase(), evtData));
-  }
+		this.sortable = new Sortable(this.$el as HTMLElement, options);
+	}
 
-  public delegateAndEmit(evtName: string) {
-    return (evtData) => {
-      if (this.branchList !== null) {
-        this["onDrag" + evtName](evtData);
-      }
-      this.emit.call(this, evtName, evtData);
-    };
-  }
+	public refresh() {
+		this.getSortableOptions();
+	}
 
-  public onBeforeDestroy() {
-    this.sortable && this.sortable.destroy();
-  }
+	public emit(evtName: string, evtData: any) {
+		this.$nextTick(() => this.$emit(evtName.toLowerCase(), evtData));
+	}
 
-  public getUnderlyingVm(htmlElt) {
-    const index = this.computeVmIndex(this.getChildrenNodes() || [], htmlElt);
-    if (index === -1) {
-      //Edge case during move callback: related element might be
-      //an element different from collection
-      return null;
-    }
-    const element = this.branchList[index];
-    return { index, element };
-  }
+	public delegateAndEmit(evtName: string) {
+		return (evtData) => {
+			if (this.branchList !== null) {
+				this["onDrag" + evtName](evtData);
+			}
+			this.emit.call(this, evtName, evtData);
+		};
+	}
 
-  public computeVmIndex(vnodes, element) {
-    let index = 0;
-    for (let [key, value] of vnodes.entries()) {
-      value === element && (index = key);
-    }
-    return index;
-  }
-  public computeIndexes() {
-    this.$nextTick(() => {
-      this.visibleIndexes = this.computeIndexesFn(this.getChildrenNodes());
-    });
-  }
+	public onBeforeDestroy() {
+		this.sortable && this.sortable.destroy();
+	}
 
-  public computeIndexesFn(childsNode: NodeListOf<Element>) {
-    if (!childsNode) {
-      return [];
-    }
-    const rawIndexes = [...childsNode].map((elt, idx) => idx);
-    return rawIndexes;
-  }
+	public getUnderlyingVm(htmlElt) {
+		const index = this.computeVmIndex(this.getChildrenNodes() || [], htmlElt);
+		if (index === -1) {
+			//Edge case during move callback: related element might be
+			//an element different from collection
+			return null;
+		}
+		const element = this.branchList[index];
+		return { index, element };
+	}
 
-  public getVmIndex(domIndex) {
-    const indexes = this.visibleIndexes;
-    const numberIndexes = indexes.length;
-    return domIndex > numberIndexes - 1 ? numberIndexes : indexes[domIndex];
-  }
+	public computeVmIndex(vnodes, element) {
+		let index = 0;
+		for (let [key, value] of vnodes.entries()) {
+			value === element && (index = key);
+		}
+		return index;
+	}
+	public computeIndexes() {
+		this.$nextTick(() => {
+			this.visibleIndexes = this.computeIndexesFn(this.getChildrenNodes());
+		});
+	}
 
-  public getChildrenNodes() {
-    const rawNodes = this.$el.querySelectorAll(".node");
-    return rawNodes;
-  }
+	public computeIndexesFn(childsNode: NodeListOf<Element>) {
+		if (!childsNode) {
+			return [];
+		}
+		const rawIndexes = [...childsNode].map((elt, idx) => idx);
+		return rawIndexes;
+	}
 
-  public onDragStart(evt) {
-    console.log("onDragStart: ", evt);
-    this.context = this.getUnderlyingVm(evt.item);
-    evt.item._underlying_vm_ = this.clone(this.context.element);
-    this.draggingElement = evt.item;
-    this.tree.$emit("tree-node-drag-start", evt, this);
-  }
+	public getVmIndex(domIndex) {
+		const indexes = this.visibleIndexes;
+		const numberIndexes = indexes.length;
+		return domIndex > numberIndexes - 1 ? numberIndexes : indexes[domIndex];
+	}
 
-  public onDragAdd(evt) {
-    console.log("onDragAdd: ", evt);
-    const element = evt.item._underlying_vm_;
-    if (element === undefined) {
-      return;
-    }
-    // removeNode(evt.item);
-    const newIndex = this.getVmIndex(evt.newIndex);
-    this.spliceList(newIndex, 0, element);
-    this.tree.$emit("tree-node-drag-add", evt, this);
-    this.computeIndexes();
-    const added = { element, newIndex };
-    this.emitChanges({ added });
-    // this.tree.$emit('tree-node-drag-add', evt, this);
-  }
+	public getChildrenNodes() {
+		const rawNodes = this.$el.querySelectorAll(".node-container");
+		return rawNodes;
+	}
 
-  public spliceList(newIndex: number, index: number, ele?: any) {
-    console.log(...arguments);
-  }
+	public onDragStart(evt) {
+		console.log("onDragStart: ", evt);
+		this.tree.$emit("tree-node-drag-start", evt, this, evt.newIndex, evt.oldIndex);
+	}
 
-  public emitChanges(evt) {
-    this.$nextTick(() => {
-      this.$emit("change", evt);
-    });
-  }
+	public onDragAdd(evt) {
+		console.log("onDragAdd: ", evt);
+		this.tree.$emit("tree-node-drag-add", evt, this, evt.newIndex, evt.oldIndex);
+	}
 
-  public onDragRemove(evt) {
-    console.log("onDragRemove: ", evt);
-    // insertNodeAt(this.$el, evt.item, evt.oldIndex);
-    if (evt.pullMode === "clone") {
-      // removeNode(evt.clone);
-      return;
-    }
-    const oldIndex = this.context.index;
-    this.spliceList(oldIndex, 1);
-    const removed = { element: this.context.element, oldIndex };
-    this.emitChanges({ removed });
-    // this.tree.$emit('tree-node-drag-remove', evt, this);
-  }
+	public emitChanges(evt) {
+		this.$nextTick(() => {
+			this.$emit("change", evt);
+		});
+	}
 
-  public onDragUpdate(evt: any) {
-    console.log("onDragUpdate: ", evt);
-    // removeNode(evt.item);
-    // insertNodeAt(evt.from, evt.item, evt.oldIndex);
-    const oldIndex = this.context.index;
-    const newIndex = this.getVmIndex(evt.newIndex);
-    this.updatePosition(oldIndex, newIndex);
-    const moved = { element: this.context.element, oldIndex, newIndex };
-    this.emitChanges({ moved });
-    // this.tree.$emit('tree-node-drag-update', evt, this);
-  }
+	public onDragRemove(evt) {
+		console.log("onDragRemove: ", evt);
+		this.tree.$emit('tree-node-drag-remove', evt, this, evt.newIndex, evt.oldIndex);
+	}
 
-  updatePosition(oldIndex: number, newIndex: number) {
-    console.log("updatePosition: ", oldIndex, newIndex);
-  }
+	public onDragUpdate(evt: any) {
+		console.log("onDragUpdate: ", evt);
+		this.tree.$emit('tree-node-drag-update', evt, this, evt.newIndex, evt.oldIndex);
+	}
 
-  public onDragMove(evt: any, originalEvent: any) {
-		console.log('onDragMove: ', evt)
-  }
+	public onDragMove(evt: any, originalEvent: any) {
+		console.log('onDragMove: ', evt);
+	}
 
-  public onDragEnd() {
-		console.log("onDragEnd");
-		this.computeIndexes();
-		this.draggingElement = null;
-    // this.tree.$emit('tree-node-drag-end');
-  }
+	public onDragEnd(evt: any) {
+		console.log("onDragEnd", evt);
+    setTimeout(() => {
+      this.tree.$emit('tree-node-drag-end', evt, this, evt.newIndex, evt.oldIndex);
+    }, 1000);
+		
+	}
 
-  public clone<T>(obj: T): T {
-    return obj;
-  }
+	public clone<T>(obj: T): T {
+		return obj;
+	}
 }
 </script>

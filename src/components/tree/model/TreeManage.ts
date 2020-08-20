@@ -51,11 +51,11 @@ export class TreeManage {
      */
     public deregisterNode(node: NodeEntity) {
         if (!node || !node.data) return;
-    
+
         node.childNodes.forEach(child => {
-          this.deregisterNode(child);
+            this.deregisterNode(child);
         });
-    
+
         delete this.nodesMap[node[this.nodekey]];
     }
 
@@ -76,7 +76,7 @@ export class TreeManage {
      * 获取node节点
      * @param data 可能是node类型 | key | 也可能是其他类型
      */
-    public getNode(data: any) {
+    public getNode(data: Node | string) {
         if (data instanceof Node) return data;
         // @ts-ignore
         const key = typeof data !== 'object' ? data : NodeManage.getNodeKey(this.nodekey, data);
@@ -95,6 +95,36 @@ export class TreeManage {
                 this.currentNode = null;
             }
             node.parent.removeChild(node);
+        }
+    }
+
+    /**
+     * 移除节点
+     * @param data 可能是node或者key
+     */
+    public dragMoveChild(data: any, parent: Node) {
+        const node = this.getNode(data);
+
+        if (node && parent) {
+            if (node === this.currentNode) {
+                this.currentNode = null;
+            }
+            parent.dragMoveChild(node);
+        }
+    }
+
+    /**
+     * 移动节点
+     * @param data 可能是node或者key
+     */
+    public dragUpdateChildren(data: Node | string, newIndex: number, oldIndex: number) {
+        const node = this.getNode(data);
+
+        if (node && node.parent) {
+            if (node === this.currentNode) {
+                this.currentNode = null;
+            }
+            node.parent.dragUpdateChildren(node, newIndex, oldIndex);
         }
     }
 }

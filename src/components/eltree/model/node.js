@@ -237,7 +237,7 @@ export default class Node {
     }
 
     child.level = this.level + 1;
-
+    
     if (typeof index === 'undefined' || index < 0) {
       this.childNodes.push(child);
     } else {

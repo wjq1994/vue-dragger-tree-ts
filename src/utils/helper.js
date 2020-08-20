@@ -40,4 +40,22 @@ const findNearestComponent = (element, componentName) => {
   return null;
 };
 
-export { insertNodeAt, camelize, findNearestComponent, removeNode };
+const arrayFindIndex = function(arr, pred) {
+  for (let i = 0; i !== arr.length; ++i) {
+    if (pred(arr[i])) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+const spliceList = function(oriData, newIndex, index, ele) {
+  // 更新节点绑定数据
+  if (ele) {
+    oriData.splice(newIndex, index, ele);
+  } else {
+    oriData.splice(newIndex, index);
+  }
+}
+
+export { insertNodeAt, camelize, findNearestComponent, removeNode, arrayFindIndex, spliceList };

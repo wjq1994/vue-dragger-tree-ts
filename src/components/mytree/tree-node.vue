@@ -63,3 +63,8 @@ export default {
 	updated() {}
 };
 </script>
+<style scoped>
+	.item-container {
+		margin-left: 20px;
+	}
+</style>>

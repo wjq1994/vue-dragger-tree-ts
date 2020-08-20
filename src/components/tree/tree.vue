@@ -1,7 +1,6 @@
 <template>
 	<div class="tree">
-		<TreeBranch nodeKey="id" :branch-list="root.childNodes"></TreeBranch>
-		<button @click="onTestClick">测试</button>
+		<TreeBranch nodeKey="id" :branch-list="root.childNodes" :root="root"></TreeBranch>
 	</div>
 </template>
 
@@ -12,10 +11,11 @@ import { TreeManage } from "./model/TreeManage";
 import BaseVue from "@/components/base/BaseVue";
 import { Component, Prop, Provide } from "vue-property-decorator";
 import draggable from "../draggable/vuedraggable.js";
-import { findNearestComponent } from "../../utils/helper"
-import { addClass, removeClass } from "../../utils/dom"
-import { NodeManage } from "./model/NodeManage"
-import { Node } from "./model/Node"
+import { findNearestComponent, spliceList } from "../../utils/helper";
+import { addClass, removeClass } from "../../utils/dom";
+import { NodeManage } from "./model/NodeManage";
+import { Node } from "./model/Node";
+import { arrayFindIndex } from '../../utils/helper';
 
 @Component({
 	name: "Tree",
@@ -59,11 +59,22 @@ export default class Tree extends BaseVue {
 	}
 
 	public dragState: any = {
-		draggingNode: null
+		draggingNode: null,
+		// 拖拽node的父节点
+		draggingNodeInitParent: null,
 	}
 
 	public getNodeKey(node: Node) {
 		return NodeManage.getNodeKey(this.nodeKey, node.data);
+	}
+
+	// 解决vue数组更新问题
+	public refresh() {
+		let newRoot = this.root.childNodes.splice(0);
+		this.root.childNodes = [];
+		this.$nextTick(() => {
+			this.root.childNodes = newRoot;
+		});
 	}
 
 	public onCreated() {
@@ -75,86 +86,37 @@ export default class Tree extends BaseVue {
 		this.root = this.treeManage.root;
 		let dragState = this.dragState;
 
-		this.$on("tree-node-drag-start", (event: any, treeNode: TreeNode) => {
-			//dragState.draggingNode = treeNode;
-			this.$emit("node-drag-start", treeNode.node, event);
+		this.$on("tree-node-drag-start", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
+			dragState.draggingNode = treeBranch.branchList[oldIndex];
+			this.$emit("node-drag-start", treeBranch, treeBranch.root, event);
 		});
 
-		this.$on("tree-node-drag-remove", (event: any, treeNode: TreeNode) => {
-			// this.treeManage.remove(treeNode.node);
+		this.$on("tree-node-drag-remove", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
+			// 删除节点
+			this.treeManage.dragMoveChild(treeBranch.branchList[oldIndex], dragState.draggingNodeInitParent);
 		});
 
-		this.$on("tree-node-drag-update", (event: any, treeNode: TreeNode) => {
-			treeNode.node.parent && treeNode.node.parent.insertChild(treeNode.node);
+		//更新节点 没有tree-node-drag-remove
+		this.$on("tree-node-drag-update", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
+			this.treeManage.dragUpdateChildren(treeBranch.branchList[oldIndex], newIndex, oldIndex);
+			this.refresh();
 		});
 
-		this.$on("tree-node-drag-add", (event: any, treeNode: TreeNode) => {
-			const { draggingNode } = dragState;
+		this.$on("tree-node-drag-add", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
+			// 更换父节点之前保存
+			dragState.draggingNodeInitParent = dragState.draggingNode.parent;
+			dragState.draggingNode.parent = treeBranch.root;
+			// 插入节点
+			treeBranch.root.insertChild(dragState.draggingNode, newIndex);
+			// 更新数据
+			spliceList(treeBranch.root.getChildren(true), newIndex, 0, dragState.draggingNode.data);
 		});
 
-		this.$on("tree-node-drag-end", (event: any) => {
-			const { draggingNode } = dragState;
+		this.$on("tree-node-drag-end", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
 			dragState.draggingNode = null;
+			dragState.draggingNodeInitParent = null;
 			console.log("-----this.root: ", this.root);
-			// if (draggingNode && dropNode) {
-			// 	const draggingNodeCopy = NodeManage.generateNode({ data: draggingNode.node.data });
-			// 	if (dropType !== "none") {
-			// 		draggingNode.node.remove();
-			// 	}
-			// 	if (dropType === "before") {
-			// 		dropNode.node.parent.insertBefore(
-			// 			draggingNodeCopy,
-			// 			dropNode.node
-			// 		);
-			// 	} else if (dropType === "after") {
-			// 		dropNode.node.parent.insertAfter(
-			// 			draggingNodeCopy,
-			// 			dropNode.node
-			// 		);
-			// 	} else if (dropType === "inner") {
-			// 		dropNode.node.insertChild(draggingNodeCopy);
-			// 	}
-			// 	if (dropType !== "none") {
-			// 		this.treeManage!.registerNode(draggingNodeCopy!);
-			// 	}
-			// 	removeClass(dropNode.$el, "is-drop-inner");
-
-			// 	this.$emit(
-			// 		"node-drag-end",
-			// 		draggingNode.node,
-			// 		dropNode.node,
-			// 		dropType,
-			// 		event
-			// 	);
-			// 	if (dropType !== "none") {
-			// 		this.$emit(
-			// 			"node-drop",
-			// 			draggingNode.node,
-			// 			dropNode.node,
-			// 			dropType,
-			// 			event
-			// 		);
-			// 	}
-			// }
-			// if (draggingNode && !dropNode) {
-			// 	this.$emit(
-			// 		"node-drag-end",
-			// 		draggingNode.node,
-			// 		null,
-			// 		dropType,
-			// 		event
-			// 	);
-			// }
-
-			// dragState.showDropIndicator = false;
-			// dragState.draggingNode = null;
-			// dragState.dropNode = null;
-			// dragState.allowDrop = true;
 		});
-	}
-
-	public onTestClick() {
-		console.log("------", JSON.stringify(this.treeManage.nodesMap));
 	}
 }
 </script>

@@ -1,5 +1,9 @@
 import { NodeEntity } from './NodeEntity';
 import { NodeManage } from './NodeManage';
+import { arrayFindIndex } from '../../../utils/helper';
+
+
+const NODE_KEY = "$treeNodeId";
 
 export class Node extends NodeEntity {
 
@@ -102,6 +106,52 @@ export class Node extends NodeEntity {
     }
 
     /**
+     * 更新业务中的数据
+     */
+    updateChildren() {
+        const newData = this.getChildren() || [];
+        const oldData = this.childNodes.map((node) => node.data);
+
+        const newDataMap = {};
+        const newNodes = [];
+
+        newData.forEach((item, index) => {
+            const key = item[NODE_KEY];
+            const isNodeExists = !!key && arrayFindIndex(oldData, data => data[NODE_KEY] === key) >= 0;
+            if (isNodeExists) {
+                newDataMap[key] = { index, data: item };
+            } else {
+                newNodes.push({ index, data: item });
+            }
+        });
+
+        oldData.forEach((item) => {
+            if (!newDataMap[item[NODE_KEY]]) this.removeChildByData(item);
+        });
+
+        newNodes.forEach(({ index, data }) => {
+            this.insertChild({ data }, index);
+        });
+
+        this.updateLeafState();
+    }
+
+    removeChildByData(data: any) {
+        let targetNode = null;
+
+        for (let i = 0; i < this.childNodes.length; i++) {
+            if (this.childNodes[i].data === data) {
+                targetNode = this.childNodes[i];
+                break;
+            }
+        }
+
+        if (targetNode) {
+            this.removeChild(targetNode);
+        }
+    }
+
+    /**
      * 合并参数
      * @param target 
      */
@@ -137,5 +187,74 @@ export class Node extends NodeEntity {
         }
 
         this.updateLeafState();
+    }
+
+    /**
+     * 拖拽时更新节点数据
+     * @param child 
+     */
+    public dragMoveChild(child: Node) {
+        const children = this.getChildren(true) || [];
+        const dataIndex = children.indexOf(child.data);
+        if (dataIndex > -1) {
+            children.splice(dataIndex, 1);
+        }
+
+        const index = this.childNodes.indexOf(child);
+
+        if (index > -1) {
+            this.childNodes.splice(index, 1);
+        }
+
+        this.updateLeafState();
+    }
+    /**
+     * 拖拽时移动节点数据
+     * @param child 
+     */
+    public dragUpdateChildrenC(child: Node, newIndex: number) {
+        const children = this.getChildren() || [];
+        const dataIndex = children.indexOf(child.data);
+        if (dataIndex > -1) {
+            let spliceData = children.splice(dataIndex, 1);
+            children.splice(newIndex, 0, spliceData[0]);
+
+        }
+
+        const index = this.childNodes.indexOf(child);
+
+        if (index > -1) {
+            let spliceNode = this.childNodes.splice(index, 1);
+            this.childNodes.splice(newIndex, 0, spliceNode[0]);
+        }
+
+        this.updateLeafState();
+    }
+
+    public alterList(data: any[], onList: Function) {
+        if (data) {
+            onList(data);
+            return;
+        }
+    }
+
+    public updatePosition<T>(data: T[], oldIndex: number, newIndex: number) {
+        const updatePosition = list =>
+            list.splice(newIndex, 0, list.splice(oldIndex, 1)[0]);
+        this.alterList(data, updatePosition);
+    }
+
+    public dragUpdateChildren(child: Node, oldIndex: number, newIndex: number) {
+        const children = this.getChildren() || [];
+        const dataIndex = children.indexOf(child.data);
+        if (dataIndex > -1) {
+            this.updatePosition(children, oldIndex, newIndex);
+        }
+
+        const index = this.childNodes.indexOf(child);
+
+        if (index > -1) {
+            this.updatePosition(this.childNodes, oldIndex, newIndex);
+        }
     }
 }

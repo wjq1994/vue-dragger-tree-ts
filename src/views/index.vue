@@ -1,8 +1,9 @@
 <template>
   <div>
       <tree nodeKey="id" ref='tree' :list='data'></tree>
-      <eltree node-key="id" :data="data" :props="defaultProps" ></eltree>
+      <button @click="onClickTest">测试</button>
   </div>
+
 </template>
 
 <script lang='ts'>
@@ -68,7 +69,9 @@ export default class Index extends BaseVue {
           label: '一级 1',
           children: [],
         }]; 
-        
+    public onClickTest() {
+      console.log("this.data", this.data)
+    }
 }
 </script>
 
