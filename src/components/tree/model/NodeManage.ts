@@ -2,7 +2,7 @@ import { NodeEntity } from './NodeEntity';
 import { Node } from './Node';
 
 let nodeIdSeed = 0;
-const NODE_KEY = "$treeNodeId";
+export const NODE_KEY = "$treeNodeId";
 
 export class NodeManage {
     // 存放node节点
@@ -10,12 +10,12 @@ export class NodeManage {
     
     public static generateNode(nodeParams: NodeEntity): Node | undefined {
         let node = new Node();
-        node.id = ++nodeIdSeed;
+        node[NODE_KEY] = ++nodeIdSeed;
         node.visible = true;
         node.parent = null;
 
         node.objectAssign(node, nodeParams);
-
+        
         node.level = 0;
         node.childNodes = [];
 
@@ -77,7 +77,7 @@ export class NodeManage {
     public static markNodeData(node: NodeEntity, data: any) {
         if (!data || data[NODE_KEY]) return;
         Object.defineProperty(data, NODE_KEY, {
-            value: node.id,
+            value: node[NODE_KEY],
             enumerable: false,
             configurable: false,
             writable: false

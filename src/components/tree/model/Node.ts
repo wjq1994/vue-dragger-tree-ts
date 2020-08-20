@@ -1,9 +1,6 @@
 import { NodeEntity } from './NodeEntity';
-import { NodeManage } from './NodeManage';
+import { NodeManage, NODE_KEY } from './NodeManage';
 import { arrayFindIndex } from '../../../utils/helper';
-
-
-const NODE_KEY = "$treeNodeId";
 
 export class Node extends NodeEntity {
 

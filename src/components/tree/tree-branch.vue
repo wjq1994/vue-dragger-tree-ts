@@ -2,7 +2,7 @@
 	<div class="branch">
 		<TreeNode :node="node" :key="getNodeKey(node)" v-for="node in branchList">
 			<template v-slot:branch="slotProps">
-				<TreeBranch :root="slotProps.node" nodeKey="id" :branch-list="slotProps.node.childNodes"></TreeBranch>
+				<TreeBranch :root="slotProps.node" :branch-list="slotProps.node.childNodes"></TreeBranch>
 			</template>
 		</TreeNode>
 	</div>
@@ -16,7 +16,7 @@ import { Component, Prop, Inject } from "vue-property-decorator";
 import draggable from "../draggable/vuedraggable.js";
 import { findNearestComponent } from "../../utils/helper";
 import { addClass, removeClass } from "../../utils/dom";
-import { NodeManage } from "./model/NodeManage";
+import { NodeManage, NODE_KEY } from "./model/NodeManage";
 import { Node } from "./model/Node";
 import Sortable from "sortablejs";
 import { insertNodeAt, camelize, removeNode } from "../../utils/helper";
@@ -31,10 +31,6 @@ export default class Tree extends BaseVue {
 	// node唯一标识字段
 	@Prop({ required: false, type: Object, default: "" })
 	public root: any;
-
-	// node唯一标识字段
-	@Prop({ required: true, type: String, default: "" })
-	public nodeKey: string;
 
 	// 分支列表
 	@Prop({ required: false, type: Array, default: () => [] })
@@ -66,7 +62,7 @@ export default class Tree extends BaseVue {
 	};
 
 	public getNodeKey(node: Node) {
-		return NodeManage.getNodeKey(this.nodeKey, node.data);
+		return NodeManage.getNodeKey(NODE_KEY, node.data);
 	}
 
 	public onCreated() {

@@ -2,7 +2,7 @@ import {TreeManage} from './TreeManage'
 import {Node} from './Node'
 
 export class NodeEntity {
-    public id?: number;
+    public $treeNodeId?: number;
     public key?: string;
     public checked?: Boolean;
     // 存放子节点

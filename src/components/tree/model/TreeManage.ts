@@ -1,9 +1,9 @@
 import { NodeEntity } from './NodeEntity';
-import { NodeManage } from './NodeManage';
+import { NodeManage, NODE_KEY } from './NodeManage';
 import { Node } from './Node'
 
 type NodesMap = {
-    [proppName:string]: Node;
+    [proppName: number]: Node;
 };
 export class TreeManage {
     public currentNode: Node | null;
@@ -13,11 +13,10 @@ export class TreeManage {
     // 根结点
     public root?: Node;
     // 存放node节点
-    public nodesMap: NodesMap;
+    public nodesMap: NodesMap = {};
     // 存放默认的一些字段
     public params: any;
-    // node节点唯一标识
-    public nodekey: string = "id";
+    
     [propName: string]: any;
 
     constructor(options: any) {
@@ -44,7 +43,7 @@ export class TreeManage {
     public registerNode(node: Node) {
         if (!node || !node.data) return;
 
-        const nodeKey = node[this.nodekey];
+        const nodeKey = node[NODE_KEY];
         if (nodeKey !== undefined) this.nodesMap[nodeKey] = node;
     }
 
@@ -59,7 +58,7 @@ export class TreeManage {
             this.deregisterNode(child);
         });
 
-        delete this.nodesMap[node[this.nodekey]];
+        delete this.nodesMap[node[NODE_KEY]];
     }
 
     /**
@@ -82,7 +81,7 @@ export class TreeManage {
     public getNode(data: Node | string) {
         if (data instanceof Node) return data;
         // @ts-ignore
-        const key = typeof data !== 'object' ? data : NodeManage.getNodeKey(this.nodekey, data);
+        const key = typeof data !== 'object' ? data : NodeManage.getNodeKey(NODE_KEY, data);
         return this.nodesMap[key] || null;
     }
 

@@ -1,6 +1,6 @@
 <template>
 	<div class="tree">
-		<TreeBranch nodeKey="id" :branch-list="root.childNodes" :root="root"></TreeBranch>
+		<TreeBranch :branch-list="root.childNodes" :root="root"></TreeBranch>
 	</div>
 </template>
 

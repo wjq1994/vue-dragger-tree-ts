@@ -1,10 +1,19 @@
 <template>
   <div class="node-container">
     <div class="node" @click.stop="handleClick">
-      <!-- <div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }"
-      class="item">{{ node.data.label }}</div>-->
-      <div :style="{ 'text-align': 'left' }" class="item">{{ node.data.label }}</div>
-			<slot name="branch" :node="node"></slot>	
+      <div
+        :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }"
+        class="item"
+      >
+        <span
+          :class="[
+          'el-tree-node__expand-icon',
+          node.data.iconClass ? node.data.iconClass : 'el-icon-document'
+        ]"
+        ></span>
+				<node-content :node="node"></node-content>
+      </div>
+      <slot name="branch" :node="node"></slot>
     </div>
   </div>
 </template>
@@ -19,10 +28,11 @@ import { Component, Prop, Inject, Watch } from "vue-property-decorator";
 import { insertNodeAt, camelize, removeNode } from "../../utils/helper";
 import { Node } from "./model/Node";
 import { NodeManage } from "./model/NodeManage";
+import NodeContent from "./node-content.vue"
 
 @Component({
   name: "TreeNode",
-  components: { draggable, TreeBranch },
+  components: { draggable, TreeBranch, NodeContent},
 })
 export default class TreeNode extends BaseVue {
   // 树列表
@@ -58,7 +68,7 @@ export default class TreeNode extends BaseVue {
 }
 </script>
 <style>
-.node-container {
+/* .node-container {
   margin-left: 20px;
-}
+} */
 </style>
