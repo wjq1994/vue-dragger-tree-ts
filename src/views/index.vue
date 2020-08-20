@@ -19,6 +19,9 @@
         </span>
       </span>
     </tree>
+    <br/>
+    <br/>
+    <br/>
     <tree nodeKey="id" ref="tree" :list="data1">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ data.label }}</span>

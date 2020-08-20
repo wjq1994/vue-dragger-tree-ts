@@ -87,13 +87,14 @@ export default class Tree extends BaseVue {
 		let dragState = this.dragState;
 
 		this.$on("tree-node-drag-start", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
+			event.item._vm_drag_state = dragState;
 			dragState.draggingNode = treeBranch.branchList[oldIndex];
 			this.$emit("node-drag-start", treeBranch, treeBranch.root, event);
 		});
 
 		this.$on("tree-node-drag-remove", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
 			// 删除节点
-			this.treeManage.dragMoveChild(treeBranch.branchList[oldIndex], dragState.draggingNodeInitParent);
+			this.treeManage.dragMoveChild(treeBranch.branchList[oldIndex], event.item._vm_drag_state.draggingNodeInitParent);
 		});
 
 		//更新节点 没有tree-node-drag-remove
@@ -104,17 +105,17 @@ export default class Tree extends BaseVue {
 
 		this.$on("tree-node-drag-add", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
 			// 更换父节点之前保存
-			dragState.draggingNodeInitParent = dragState.draggingNode.parent;
-			dragState.draggingNode.parent = treeBranch.root;
+			event.item._vm_drag_state.draggingNodeInitParent = event.item._vm_drag_state.draggingNode.parent;
+			event.item._vm_drag_state.draggingNode.parent = treeBranch.root;
 			// 插入节点
-			treeBranch.root.insertChild(dragState.draggingNode, newIndex);
+			treeBranch.root.insertChild(event.item._vm_drag_state.draggingNode, newIndex);
 			// 更新数据
-			spliceList(treeBranch.root.getChildren(true), newIndex, 0, dragState.draggingNode.data);
+			spliceList(treeBranch.root.getChildren(true), newIndex, 0, event.item._vm_drag_state.draggingNode.data);
 		});
 
 		this.$on("tree-node-drag-end", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
-			dragState.draggingNode = null;
-			dragState.draggingNodeInitParent = null;
+			event.item._vm_drag_state.draggingNode = null;
+			event.item._vm_drag_state.draggingNodeInitParent = null;
 			console.log("-----this.root: ", this.root);
 		});
 	}
