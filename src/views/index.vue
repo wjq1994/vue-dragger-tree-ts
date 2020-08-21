@@ -22,7 +22,7 @@
     <br/>
     <br/>
     <br/>
-    <tree nodeKey="id" ref="tree" :list="data1">
+    <tree nodeKey="id" ref="tree1" :list="data1">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ data.label }}</span>
         <span>
@@ -128,16 +128,19 @@ export default class Index extends BaseVue {
   ];
   public onClickTest() {
     console.log("this.data", this.data);
+    console.log("this.treeManage", (this.$refs.tree as any).treeManage);
+    console.log("this.treeManage1", (this.$refs.tree1 as any).treeManage);
   }
+  // 增
   public append(node, data) {
     console.log("append")
     let newChild = { data:{ label: 'testtest', children: []} };
     node.insertChild(newChild);
   }
+  // 删
   public remove(node, data) {
     console.log("remove", node, data);
     node.parent.removeChild(node);
-    // (this.$refs.tree as any).refresh();
   }
 }
 </script>

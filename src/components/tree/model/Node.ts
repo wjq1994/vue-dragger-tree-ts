@@ -1,6 +1,7 @@
 import { NodeEntity } from './NodeEntity';
 import { NodeManage, NODE_KEY } from './NodeManage';
 import { arrayFindIndex } from '../../../utils/helper';
+import { TreeManage } from './TreeManage';
 
 export class Node extends NodeEntity {
 
@@ -190,7 +191,7 @@ export class Node extends NodeEntity {
      * 拖拽时更新节点数据
      * @param child 
      */
-    public dragMoveChild(child: Node) {
+    public dragMoveChild(child: Node, isSameTree: boolean = true) {
         const children = this.getChildren(true) || [];
         const dataIndex = children.indexOf(child.data);
         if (dataIndex > -1) {
@@ -201,6 +202,20 @@ export class Node extends NodeEntity {
 
         if (index > -1) {
             this.childNodes.splice(index, 1);
+        }
+
+
+
+        if (!isSameTree) {
+            // 循环更新level级别
+            let cycleGetChildNodes = (parent: Node) => {
+                this.store.deregisterNode(parent);
+                let childNodes = parent.childNodes;
+                childNodes.forEach((child: Node) => {
+                    cycleGetChildNodes(child);
+                });
+            }
+            cycleGetChildNodes(child)
         }
 
         this.updateLeafState();
@@ -253,5 +268,28 @@ export class Node extends NodeEntity {
         if (index > -1) {
             this.updatePosition(this.childNodes, oldIndex, newIndex);
         }
+    }
+
+    public dragInsertChildren(child: Node, oldIndex: number, newIndex: number) {
+        // 循环更新level级别
+        let cycleGetChildNodes = (parent: Node) => {
+            this.store.registerNode(parent);
+            let childNodes = parent.childNodes;
+            childNodes.forEach((child: Node) => {
+                child.level = parent.level + 1;
+                cycleGetChildNodes(child);
+            });
+        }
+
+        // 将data数据放入
+        let children = this.getChildren() || [];
+        children.splice(newIndex, 0 , child.data || {});
+        
+        child.level = this.level + 1;
+        // 将Node数据放入
+        cycleGetChildNodes(child);
+        this.childNodes.splice(newIndex, 0, child);
+        
+        this.updateLeafState();
     }
 }

@@ -7,7 +7,6 @@ type NodesMap = {
 };
 export class TreeManage {
     public currentNode: Node | null;
-    public currentNodeKey: string | null;
     // 业务树列表
     public data: any;
     // 根结点
@@ -16,12 +15,11 @@ export class TreeManage {
     public nodesMap: NodesMap = {};
     // 存放默认的一些字段
     public params: any;
-    
+
     [propName: string]: any;
 
     constructor(options: any) {
         this.currentNode = null;
-        this.currentNodeKey = null;
 
         for (let option in options) {
             if (options.hasOwnProperty(option)) {
@@ -104,14 +102,14 @@ export class TreeManage {
      * 移除节点
      * @param data 可能是node或者key
      */
-    public dragMoveChild(data: any, parent: Node) {
+    public dragMoveChild(data: any, parent: Node, isSameTree: boolean | null) {
         const node = this.getNode(data);
 
         if (node && parent) {
             if (node === this.currentNode) {
                 this.currentNode = null;
             }
-            parent.dragMoveChild(node);
+            parent.dragMoveChild(node, isSameTree);
         }
     }
 
@@ -129,4 +127,5 @@ export class TreeManage {
             node.parent.dragUpdateChildren(node, newIndex, oldIndex);
         }
     }
+
 }
