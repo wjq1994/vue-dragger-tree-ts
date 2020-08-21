@@ -1,6 +1,6 @@
 <template>
   <div>
-    <tree nodeKey="id" ref="tree" :list="data">
+    <tree nodeKey="id" ref="tree" :list="data" @node-click="nodeClick">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ data.label }}</span>
         <span>
@@ -142,6 +142,10 @@ export default class Index extends BaseVue {
     console.log("remove", node, data);
     node.parent.removeChild(node);
   }
+  public nodeClick(node, data) {
+    console.log("nodeClick", node, data);
+  }
+  
 }
 </script>
 

@@ -64,6 +64,7 @@ export default class TreeNode extends BaseVue {
     console.log(this.node.data.label, "this.node: ", this.node);
     const store = this.tree.treeManage;
     store!.setCurrentNode(this.node);
+    this.tree.$emit('node-click', this.node, this.node.data);
   }
 }
 </script>
