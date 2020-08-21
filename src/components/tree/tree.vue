@@ -112,14 +112,9 @@ export default class Tree extends BaseVue {
 			event.item._vm_drag_state.draggingNode.parent = treeBranch.root;
 			// 插入节点
 			treeBranch.root.dragInsertChildren(event.item._vm_drag_state.draggingNode, newIndex, oldIndex);
-			// 更新数据
-			// spliceList(treeBranch.root.getChildren(true), newIndex, 0, event.item._vm_drag_state.draggingNode.data);
 		});
 
 		this.$on("tree-node-drag-end", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
-			event.item._vm_drag_state.draggingNode = null;
-			event.item._vm_drag_state.draggingNodeInitParent = null;
-			event.item._vm_drag_state.isSameTree = null;
 			console.log("-----this.root: ", this.root);
 		});
 	}

@@ -26,7 +26,7 @@ export default class NodeContent extends BaseVue {
     ) : tree.$scopedSlots.default ? (
       tree.$scopedSlots.default({ node, data })
     ) : (
-      <span class="el-tree-node__label">{node.data.label}</span>
+      <span class="el-tree-node__label">暂无信息</span>
     );
   }
 }

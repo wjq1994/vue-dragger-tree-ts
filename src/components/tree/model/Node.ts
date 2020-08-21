@@ -1,7 +1,6 @@
 import { NodeEntity } from './NodeEntity';
 import { NodeManage, NODE_KEY } from './NodeManage';
 import { arrayFindIndex } from '../../../utils/helper';
-import { TreeManage } from './TreeManage';
 
 export class Node extends NodeEntity {
 
@@ -280,9 +279,9 @@ export class Node extends NodeEntity {
                 cycleGetChildNodes(child);
             });
         }
-
+        
         // 将data数据放入
-        let children = this.getChildren() || [];
+        let children = this.getChildren(true);
         children.splice(newIndex, 0 , child.data || {});
         
         child.level = this.level + 1;
