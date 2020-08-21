@@ -7,13 +7,13 @@
           <el-button
             type="text"
             size="mini"
-            @click="() => append(node, data)">
+            @click.stop="() => append(node, data)">
             Append
           </el-button>
           <el-button
             type="text"
             size="mini"
-            @click="() => remove(node, data)">
+             @click.stop="() => remove(node, data)">
             Delete
           </el-button>
         </span>
@@ -21,7 +21,7 @@
     </tree>
     <br/>
     <br/>
-    <br/>
+    <br/> 
     <tree nodeKey="id" ref="tree1" :list="data1">
       <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ data.label }}</span>
@@ -29,13 +29,13 @@
           <el-button
             type="text"
             size="mini"
-            @click="() => append(node, data)">
+             @click.stop="() => append(node, data)">
             Append
           </el-button>
           <el-button
             type="text"
             size="mini"
-            @click="() => remove(node, data)">
+             @click.stop="() => remove(node, data)">
             Delete
           </el-button>
         </span>
@@ -149,5 +149,5 @@ export default class Index extends BaseVue {
 }
 </script>
 
-<style>
+<style lang="scss">
 </style>

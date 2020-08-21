@@ -292,4 +292,5 @@ export class Node extends NodeEntity {
         
         this.updateLeafState();
     }
+
 }
