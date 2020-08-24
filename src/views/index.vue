@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<tree nodeKey="id" ref="tree" :list="data" @node-click="nodeClick">
+		<tree :allowDrop="allowDrop" nodeKey="id" ref="tree" :list="data" @node-click="nodeClick">
 			<span class="custom-tree-node" slot-scope="{ node, data }">
 				<span>{{ data.label }}</span>
 				<span>
@@ -57,6 +57,7 @@ import { Component } from "vue-property-decorator";
 
 @Component({ name: "index", components: { tree, mytree, eltree } })
 export default class Index extends BaseVue {
+	public allowDrop: boolean = true;
 	public defaultProps: any = {
 		children: "children",
 		label: "label",

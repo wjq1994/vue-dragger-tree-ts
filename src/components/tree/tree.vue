@@ -46,8 +46,8 @@ export default class Tree extends BaseVue {
 	@Prop({ required: false, type: Number, default: 20 })
 	public indent?: number;
 
-	@Prop({ required: false, type: Function, default: null })
-	public allowDrop?: Function;
+	@Prop({ required: false, type: Boolean, default: false })
+	public allowDrop?: Boolean;
 
 	@Provide('treeInitData') treeInitData = this;
 
@@ -55,7 +55,7 @@ export default class Tree extends BaseVue {
 		animation: 0,
 		group: "description",
 		disabled: false,
-		ghostClass: "ghost"
+		ghostClass: "ghost",
 	}
 
 	public dragState: any = {
@@ -87,6 +87,8 @@ export default class Tree extends BaseVue {
 		})
 		this.root = this.treeManage.root;
 		let dragState = this.dragState;
+		
+		this.dragOptions.disabled = this.allowDrop;
 
 		this.$on("tree-node-drag-start", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
 			event.item._vm_drag_state = dragState;

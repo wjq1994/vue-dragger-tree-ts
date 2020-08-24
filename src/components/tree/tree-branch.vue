@@ -25,7 +25,7 @@ import { insertNodeAt, camelize, removeNode } from "../../utils/helper";
 	name: "TreeBranch",
 	components: { TreeNode, draggable },
 })
-export default class Tree extends BaseVue {
+export default class TreeBranch extends BaseVue {
 	public tree!: Tree;
 
 	// node唯一标识字段
@@ -111,6 +111,7 @@ export default class Tree extends BaseVue {
 		!("draggable" in options) && (options.draggable = ">*");
 
 		this.sortable = new Sortable(this.$el as HTMLElement, options);
+		
 	}
 
 	public refresh() {
