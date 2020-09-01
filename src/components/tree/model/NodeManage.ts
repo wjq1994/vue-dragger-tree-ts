@@ -20,7 +20,7 @@ export class NodeManage {
         node.childNodes = [];
 
         if (node.parent) {
-            node.level = node.parent.level ! + 1;
+            node.level = node.parent!.level! + 1;
         }
 
         const store = node.store;

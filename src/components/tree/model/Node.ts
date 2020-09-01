@@ -1,6 +1,6 @@
 import { NodeEntity } from './NodeEntity';
 import { NodeManage, NODE_KEY } from './NodeManage';
-import { arrayFindIndex } from '../../../utils/helper';
+import { arrayFindIndex } from '../utils/helper';
 
 export class Node extends NodeEntity {
 
@@ -102,49 +102,19 @@ export class Node extends NodeEntity {
         return data[children];
     }
 
-    /**
-     * 更新业务中的数据
-     */
-    updateChildren() {
-        const newData = this.getChildren() || [];
-        const oldData = this.childNodes.map((node) => node.data);
-
-        const newDataMap = {};
-        const newNodes = [];
-
-        newData.forEach((item, index) => {
-            const key = item[NODE_KEY];
-            const isNodeExists = !!key && arrayFindIndex(oldData, data => data[NODE_KEY] === key) >= 0;
-            if (isNodeExists) {
-                newDataMap[key] = { index, data: item };
-            } else {
-                newNodes.push({ index, data: item });
-            }
-        });
-
-        oldData.forEach((item) => {
-            if (!newDataMap[item[NODE_KEY]]) this.removeChildByData(item);
-        });
-
-        newNodes.forEach(({ index, data }) => {
-            this.insertChild({ data }, index);
-        });
-
-        this.updateLeafState();
-    }
 
     removeChildByData(data: any) {
         let targetNode = null;
 
-        for (let i = 0; i < this.childNodes.length; i++) {
-            if (this.childNodes[i].data === data) {
-                targetNode = this.childNodes[i];
+        for (let i = 0; i < this.childNodes!.length; i++) {
+            if (this.childNodes![i].data === data) {
+                targetNode = this.childNodes![i];
                 break;
             }
         }
 
         if (targetNode) {
-            this.removeChild(targetNode);
+            this.removeChild(targetNode as Node);
         }
     }
 
@@ -169,21 +139,41 @@ export class Node extends NodeEntity {
     };
 
     public removeChild(child: Node) {
-        const children = this.getChildren() || [];
-        const dataIndex = children.indexOf(child.data);
-        if (dataIndex > -1) {
-            children.splice(dataIndex, 1);
+        let oldCurrentNode = this.store!.currentNode;
+        try {
+            this.updateCurrentNodeNull(child);
+            const children = this.getChildren() || [];
+            const dataIndex = children.indexOf(child.data);
+            if (dataIndex > -1) {
+                children.splice(dataIndex, 1);
+            }
+
+            const index = this.childNodes!.indexOf(child);
+
+            if (index > -1) {
+                this.store && this.store.deregisterNode(child);
+                child.parent = null;
+                this.childNodes!.splice(index, 1);
+            }
+
+            this.updateLeafState();
+        } catch (error) {
+            // 报错回滚当前数据
+            this.store!.currentNode = oldCurrentNode;
         }
+    }
 
-        const index = this.childNodes.indexOf(child);
-
-        if (index > -1) {
-            this.store && this.store.deregisterNode(child);
-            child.parent = null;
-            this.childNodes.splice(index, 1);
+    public updateCurrentNodeNull(node: NodeEntity) {
+        if (this.store!.currentNode) {
+            if (this.store!.currentNode === node) {
+                this.store!.currentNode = null;
+            }
+            if (node.childNodes && node.childNodes.length > 0) {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    this.updateCurrentNodeNull(node.childNodes[i]);
+                }
+            }
         }
-
-        this.updateLeafState();
     }
 
     /**
@@ -197,20 +187,20 @@ export class Node extends NodeEntity {
             children.splice(dataIndex, 1);
         }
 
-        const index = this.childNodes.indexOf(child);
+        const index = this.childNodes!.indexOf(child);
 
         if (index > -1) {
-            this.childNodes.splice(index, 1);
+            this.childNodes!.splice(index, 1);
         }
 
 
 
         if (!isSameTree) {
             // 循环更新level级别
-            let cycleGetChildNodes = (parent: Node) => {
-                this.store.deregisterNode(parent);
+            let cycleGetChildNodes = (parent: NodeEntity) => {
+                this.store!.deregisterNode(parent);
                 let childNodes = parent.childNodes;
-                childNodes.forEach((child: Node) => {
+                childNodes!.forEach((child: NodeEntity) => {
                     cycleGetChildNodes(child);
                 });
             }
@@ -232,11 +222,11 @@ export class Node extends NodeEntity {
 
         }
 
-        const index = this.childNodes.indexOf(child);
+        const index = this.childNodes!.indexOf(child);
 
         if (index > -1) {
-            let spliceNode = this.childNodes.splice(index, 1);
-            this.childNodes.splice(newIndex, 0, spliceNode[0]);
+            let spliceNode = this.childNodes!.splice(index, 1);
+            this.childNodes!.splice(newIndex, 0, spliceNode[0]);
         }
 
         this.updateLeafState();
@@ -250,7 +240,7 @@ export class Node extends NodeEntity {
     }
 
     public updatePosition<T>(data: T[], oldIndex: number, newIndex: number) {
-        const updatePosition = list =>
+        const updatePosition = (list: T[]) =>
             list.splice(newIndex, 0, list.splice(oldIndex, 1)[0]);
         this.alterList(data, updatePosition);
     }
@@ -262,33 +252,35 @@ export class Node extends NodeEntity {
             this.updatePosition(children, oldIndex, newIndex);
         }
 
-        const index = this.childNodes.indexOf(child);
+        const index = this.childNodes!.indexOf(child);
 
         if (index > -1) {
-            this.updatePosition(this.childNodes, oldIndex, newIndex);
+            this.updatePosition(this.childNodes!, oldIndex, newIndex);
         }
     }
 
     public dragInsertChildren(child: Node, oldIndex: number, newIndex: number) {
         // 循环更新level级别
+        // @ts-ignore
         let cycleGetChildNodes = (parent: Node) => {
-            this.store.registerNode(parent);
+            this.store!.registerNode(parent);
             let childNodes = parent.childNodes;
-            childNodes.forEach((child: Node) => {
-                child.level = parent.level + 1;
+            // @ts-ignore
+            childNodes!.forEach((child: Node) => {
+                child.level = parent.level! + 1;
                 cycleGetChildNodes(child);
             });
         }
-        
+
         // 将data数据放入
         let children = this.getChildren(true);
-        children.splice(newIndex, 0 , child.data || {});
-        
-        child.level = this.level + 1;
+        children.splice(newIndex, 0, child.data || {});
+
+        child.level = this.level! + 1;
         // 将Node数据放入
         cycleGetChildNodes(child);
-        this.childNodes.splice(newIndex, 0, child);
-        
+        this.childNodes!.splice(newIndex, 0, child);
+
         this.updateLeafState();
     }
 
