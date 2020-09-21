@@ -110,7 +110,7 @@ export class TreeManage {
         const node = this.getNode(data);
 
         if (node && parent) {
-            if (node === this.currentNode) {
+            if (node === this.currentNode && !isSameTree) {
                 this.currentNode = null;
             }
             parent.dragMoveChild(node as Node, isSameTree!);
@@ -118,17 +118,14 @@ export class TreeManage {
     }
 
     /**
-     * 移动节点
+     * 更新节点
      * @param data 可能是node或者key
      */
     public dragUpdateChildren(data: Node | string, newIndex: number, oldIndex: number) {
         const node = this.getNode(data);
 
         if (node && node.parent) {
-            if (node === this.currentNode) {
-                this.currentNode = null;
-            }
-            node.parent.dragUpdateChildren(node as Node, newIndex, oldIndex);
+            node.parent.dragUpdateChildren(node as Node, oldIndex, newIndex);
         }
     }
 

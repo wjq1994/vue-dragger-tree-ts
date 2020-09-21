@@ -46,14 +46,6 @@ export class NodeManage {
         }
         if (!node.data) return;
 
-        const key = store.key;
-
-        // 判断当前节点
-        if (key && store.currentNodeKey !== undefined && node.key === store.currentNodeKey) {
-            store.currentNode = node;
-            store.currentNode.isCurrent = true;
-        }
-
         node.updateLeafState();
 
         return node;
@@ -88,4 +80,9 @@ export class NodeManage {
         if (!key) return data[NODE_KEY];
         return data[key];
     }
+
+    public static setNodeKey(node: NodeEntity) {
+        node[NODE_KEY] = ++nodeIdSeed;
+    }
+
 }

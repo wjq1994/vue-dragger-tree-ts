@@ -6,7 +6,7 @@
         <div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }" class="node-content">
             <span :class="[
           'el-tree-node__expand-icon',
-          node.data.iconClass ? node.data.iconClass : 'el-icon-document'
+          node.data.iconClass ? node.data.iconClass : ''
         ]"></span>
             <node-content :node="node"></node-content>
         </div>
@@ -23,7 +23,7 @@ import Tree from "./tree.vue";
 import {
     TreeManage
 } from "./model/TreeManage";
-import BaseVue from "@/components/base/BaseVue";
+import BaseVue from "../base/BaseVue";
 import {
     Component,
     Prop,
@@ -62,7 +62,11 @@ export default class TreeNode extends BaseVue {
     // tree组件created之前的静态
     @Inject("treeInitData") private readonly treeInitData!: any;
 
-    public tree!: Tree;
+    @Watch('node', { immediate: true, deep: true })
+	private onDragOptionsChanged(newOptionValue: any): void {
+	}
+
+    public tree!:Tree;
 
     public onCreated() {
         // 获取到树组件
@@ -77,6 +81,7 @@ export default class TreeNode extends BaseVue {
 
     public handleClick() {
         console.log("this.node: ", this.node);
+        console.log("this.tree: ", this.tree);
         const store = this.tree.treeManage;
         store!.setCurrentNode(this.node!);
         this.tree.refresh();

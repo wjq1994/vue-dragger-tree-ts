@@ -1,6 +1,6 @@
 import { NodeEntity } from './NodeEntity';
 import { NodeManage, NODE_KEY } from './NodeManage';
-import { arrayFindIndex } from '../utils/helper';
+import { cloneDeep } from 'lodash';
 
 export class Node extends NodeEntity {
 
@@ -193,8 +193,6 @@ export class Node extends NodeEntity {
             this.childNodes!.splice(index, 1);
         }
 
-
-
         if (!isSameTree) {
             // 循环更新level级别
             let cycleGetChildNodes = (parent: NodeEntity) => {
@@ -259,10 +257,19 @@ export class Node extends NodeEntity {
         }
     }
 
-    public dragInsertChildren(child: Node, oldIndex: number, newIndex: number) {
-        // 循环更新level级别
+    public dragInsertChildren(child: Node, oldIndex: number, newIndex: number, isSameTree: boolean = true) {
+        // 不是同一棵树要拷贝数据，并且父组件不能拷贝
+        if (!isSameTree) {
+            let initParent = child.parent;
+            child = cloneDeep(child);
+            child.parent = initParent;
+        };
+        // 循环更新level级别，如果不是同一棵树，要更新唯一标识，并注册
         // @ts-ignore
         let cycleGetChildNodes = (parent: Node) => {
+            if (!isSameTree) {
+                NodeManage.setNodeKey(parent);
+            }
             this.store!.registerNode(parent);
             let childNodes = parent.childNodes;
             // @ts-ignore
@@ -282,6 +289,7 @@ export class Node extends NodeEntity {
         this.childNodes!.splice(newIndex, 0, child);
 
         this.updateLeafState();
+
     }
 
 }
