@@ -95,7 +95,7 @@ export default class Tree extends BaseVue {
 		})
 		this.root = this.treeManage.root;
 		let dragState = this.dragState;
-
+		console.log("tree onCreated this.root: ", this.root);
 		this.$on("tree-node-drag-start", (event: any, treeBranch: TreeBranch, newIndex: number, oldIndex: number) => {
 			event.item._vm_drag_state = dragState;
 			dragState.draggingNode = treeBranch.branchList![oldIndex];

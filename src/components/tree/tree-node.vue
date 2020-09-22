@@ -1,7 +1,7 @@
 <template>
 <div class="node-container" :class="{
       'is-current': node.isCurrent,
-    }">
+    }" tabindex="-1">
     <div class="node" @click.stop="handleClick">
         <div :style="{ 'padding-left': (node.level - 1) * treeInitData.indent + 'px', 'text-align': 'left' }" class="node-content">
             <span :class="[
@@ -84,7 +84,6 @@ export default class TreeNode extends BaseVue {
         console.log("this.tree: ", this.tree);
         const store = this.tree.treeManage;
         store!.setCurrentNode(this.node!);
-        this.tree.refresh();
         this.tree.$emit('node-click', {
             treeNode: this,
             node: this.node,
@@ -98,7 +97,8 @@ export default class TreeNode extends BaseVue {
 .node-container {
     background: #ffffff;
 
-    &.is-current {
+    &:focus {
+        outline: none;
         background: #f5f7fa;
     }
 

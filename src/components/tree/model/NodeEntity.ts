@@ -14,7 +14,7 @@ export class NodeEntity {
     // 是否展开 默认不展开
     public expanded?: Boolean;
     // 是否是当前节点 默认不是
-    public isCurrent?: Boolean;
+    public isCurrent?: Boolean = false;
     // 是否是叶子节点 默认不是
     public isLeaf?: Boolean;
     public isLeafByUser?: Boolean;
@@ -24,6 +24,6 @@ export class NodeEntity {
     // 树管理器
     public store?: TreeManage;
     // 是否显示
-    public visible?: Boolean;
+    public visible?: Boolean = true;
 
 }
